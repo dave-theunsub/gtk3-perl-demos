@@ -25,14 +25,16 @@ sub do_button_box {
             $window->set_icon( $transparent );                                 
         }
 
-        my $box = Gtk3::VBox->new( FALSE, 0 );
+        my $box = Gtk3::Box->new( 'vertical', 0 );
+		$box->set_homogeneous( FALSE );
         $window->add($box);
 
         my $frame_horiz = Gtk3::Frame->new('Horizontal Button Boxes');
         $box->pack_start( $frame_horiz, TRUE, TRUE, 10 );
 
-        my $vbox = Gtk3::VBox->new( FALSE, 0 );
+        my $vbox = Gtk3::Box->new( 'vertical', 0 );
         $vbox->set_border_width(10);
+		$vbox->set_homogeneous( FALSE );
         $frame_horiz->add($vbox);
 
         $vbox->pack_start( create_bbox( TRUE, 'Spread', 40, 'spread' ),
@@ -50,8 +52,9 @@ sub do_button_box {
         my $frame_vert = Gtk3::Frame->new('Vertical Button Boxes');
         $box->pack_start( $frame_vert, TRUE, TRUE, 10 );
 
-        my $hbox = Gtk3::HBox->new( FALSE, 0 );
+        my $hbox = Gtk3::Box->new( 'horizontal', 0 );
         $hbox->set_border_width(10);
+		$hbox->set_homogeneous( FALSE );
         $frame_vert->add($hbox);
 
         $hbox->pack_start( create_bbox( FALSE, 'Spread', 30, 'spread' ),
@@ -84,9 +87,9 @@ sub create_bbox {
     my $bbox;
 
     if ($horiz) {
-        $bbox = Gtk3::HButtonBox->new();
+        $bbox = Gtk3::ButtonBox->new('horizontal');
     } else {
-        $bbox = Gtk3::VButtonBox->new();
+        $bbox = Gtk3::ButtonBox->new('vertical');
     }
     $bbox->set_border_width(5);
     $frame->add($bbox);
