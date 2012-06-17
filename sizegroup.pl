@@ -31,9 +31,10 @@ sub do_sizegroup {
             $window->set_icon( $transparent );                                 
         }
 
-        my $vbox = Gtk3::VBox->new( FALSE, 5 );
+        my $vbox = Gtk3::Box->new( 'vertical', 5 );
         $window->get_content_area()->add($vbox);
         $vbox->set_border_width(5);
+		$vbox->set_homogeneous( FALSE );
 
         my $size_group = Gtk3::SizeGroup->new('horizontal');
 

@@ -30,19 +30,22 @@ sub do_spinner {
             $window->set_icon( $transparent );                                 
         }
 
-        my $box = Gtk3::VBox->new( FALSE, 5 );
+        my $box = Gtk3::Box->new( 'vertical', 5 );
         $window->get_content_area()->add($box);
         $box->set_border_width(5);
+		$box->set_homogeneous( FALSE );
 
         # Sensitive
-        my $hbox = Gtk3::HBox->new( FALSE, 5 );
+        my $hbox = Gtk3::Box->new( 'horizontal', 5 );
+		$hbox->set_homogeneous( FALSE );
         $spinner = Gtk3::Spinner->new();
         $hbox->add($spinner);
         $hbox->add( Gtk3::Entry->new() );
         $box->add($hbox);
 
         # Disabled
-        my $hbox2 = Gtk3::HBox->new( FALSE, 5 );
+        my $hbox2 = Gtk3::Box->new( 'horizontal', 5 );
+		$hbox2->set_homogeneous( FALSE );
         $spinner2 = Gtk3::Spinner->new();
         $hbox2->add($spinner2);
         $hbox2->add( Gtk3::Entry->new() );

@@ -57,7 +57,8 @@ sub do_ui_manager {
     $window->add_accel_group($ui->get_accel_group);
     $ui->add_ui_from_string($ui_info, length($ui_info));
 
-    my $vbox = Gtk3::VBox->new(FALSE, 0);
+    my $vbox = Gtk3::Box->new( 'vertical', 0);
+	$vbox->set_homogeneous( FALSE );
     $window->add($vbox);
     $vbox->pack_start($ui->get_widget('/MenuBar'), FALSE, FALSE, 0);
 
@@ -69,7 +70,8 @@ sub do_ui_manager {
 
     $vbox->pack_start(Gtk3::HSeparator->new(), FALSE, TRUE, 0);
 
-    my $box2 = Gtk3::VBox->new(FALSE, 10);
+    my $box2 = Gtk3::Box->new('vertical', 10);
+	$box2->set_homogeneous( FALSE );
     $vbox->pack_start($box2, FALSE, TRUE, 0);
 
     my $button = Gtk3::Button->new_with_label('close');

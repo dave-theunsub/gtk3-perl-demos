@@ -28,8 +28,9 @@ sub do_infobar {
             $window->set_icon( $transparent );                                 
         }
 
-        my $box = Gtk3::VBox->new( FALSE, 0 );
+        my $box = Gtk3::Box->new( 'vertical', 0 );
         $box->set_border_width(5);
+		$box->set_homogeneous( FALSE );
         $window->add($box);
 
         my $bar = Gtk3::InfoBar->new();
@@ -77,8 +78,9 @@ sub do_infobar {
         my $frame = Gtk3::Frame->new('Info Bars');
         $box->pack_start( $frame, FALSE, FALSE, 8 );
 
-        my $vbox = Gtk3::VBox->new( FALSE, 8 );
+        my $vbox = Gtk3::Box->new( 'vertical', 8 );
         $vbox->set_border_width(8);
+		$vbox->set_homogeneous( FALSE );
         $frame->add($vbox);
         $vbox->pack_start(
             Gtk3::Label->new('An example of different info bars'),
