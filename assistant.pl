@@ -64,8 +64,9 @@ sub on_entry_changed {
 }
 
 sub create_page1 {
-    my $box = Gtk3::HBox->new( TRUE, 12 );
+    my $box = Gtk3::Box->new( 'horizontal', 12 );
     $box->set_border_width(12);
+	$box->set_homogeneous( TRUE );
 
     $box->pack_start(
         Gtk3::Label->new('You must fill out this entry to continue:'),
@@ -85,8 +86,9 @@ sub create_page1 {
 }
 
 sub create_page2 {
-    my $box = Gtk3::VBox->new( TRUE, 12 );
+    my $box = Gtk3::Box->new( 'vertical', 12 );
     $box->set_border_width(12);
+	$box->set_homogeneous( TRUE );
 
     my $cb = Gtk3::CheckButton->new_with_label(
               'This is optional data, you may continue '
