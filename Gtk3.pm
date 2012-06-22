@@ -28,6 +28,7 @@ my @_GTK_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
   Gtk3::Stock::list_ids
   Gtk3::TreePath::get_indices
   Gtk3::Window::list_toplevels
+  Gtk3::ActionGroup::list_actions
 /;
 my @_GTK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
   Gtk3::Stock::lookup
@@ -466,25 +467,25 @@ sub Gtk3::ActionGroup::add_actions {
     my (@properties) = @_;
 	my ($name, $stock_id, $label, $accelerator, $tooltip, $callback);
 
-      for my $p (@properties) {
-		if (ref($p) eq 'ARRAY') {
-          $name        = $p->[0];
-          $stock_id    = $p->[1];
-          $label       = $p->[2];
-          $accelerator = $p->[3];
-          $tooltip     = $p->[4];
-          $callback    = $p->[5];
-        } elsif (ref($p) eq 'HASH') {
-		  $name        = $p->{name};
-		  $stock_id    = $p->{stock_id};
-		  $label       = $p->{label};
-		  $accelerator = $p->{accelerator};
-		  $tooltip     = $p->{tooltip};
-		  $callback    = $p->{callback};
-        } else {
-          croak 'action entry must be a hash or an array';
-        }
-	  }
+    for my $p (@properties) {
+	  if (ref($p) eq 'ARRAY') {
+        $name        = $p->[0];
+        $stock_id    = $p->[1];
+        $label       = $p->[2];
+        $accelerator = $p->[3];
+        $tooltip     = $p->[4];
+        $callback    = $p->[5];
+      } elsif (ref($p) eq 'HASH') {
+        $name        = $p->{name};
+        $stock_id    = $p->{stock_id};
+        $label       = $p->{label};
+        $accelerator = $p->{accelerator};
+        $tooltip     = $p->{tooltip};
+        $callback    = $p->{callback};
+      } else {
+        croak 'action entry must be a hash or an array';
+      }
+    }
 
     my $action = Gtk3::Action->new (
       $name, $label, $tooltip, $stock_id);
@@ -509,7 +510,7 @@ sub Gtk3::ActionGroup::add_toggle_actions {
   my $process = sub {
     my @properties = @_;
 	my ($name, $stock_id, $label, $accelerator, $tooltip, $callback, $is_active);
-	for my $p(@properties) {
+    for my $p(@properties) {
 	  if(ref($p) eq 'ARRAY') {
         $name        = $p->[0];
         $stock_id    = $p->[1];
@@ -607,7 +608,7 @@ sub Gtk3::ActionGroup::add_radio_actions {
   for my $e (@$entries) {
     my $group = $process->($first_action, $e);
     if (!$first_action) {
-          $first_action = $group;
+      $first_action = $group;
     }
   }
 
