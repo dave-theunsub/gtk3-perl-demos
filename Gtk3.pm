@@ -468,10 +468,10 @@ sub Gtk3::ActionGroup::add_actions {
 
   my $process = sub {
     my (@properties) = @_;
-	my ($name, $stock_id, $label, $accelerator, $tooltip, $callback);
+    my ($name, $stock_id, $label, $accelerator, $tooltip, $callback);
 
     for my $p (@properties) {
-	  if (ref($p) eq 'ARRAY') {
+      if (ref($p) eq 'ARRAY') {
         $name        = $p->[0];
         $stock_id    = $p->[1];
         $label       = $p->[2];
@@ -488,6 +488,13 @@ sub Gtk3::ActionGroup::add_actions {
       } else {
         croak 'action entry must be a hash or an array';
       }
+    }
+
+    if ($label) {
+      $label   = $self->translate_string($label);
+    }
+	if ($tooltip) {
+      $tooltip = $self->translate_string($tooltip);
     }
 
     my $action = Gtk3::Action->new (
@@ -515,7 +522,8 @@ sub Gtk3::ActionGroup::add_toggle_actions {
 
   my $process = sub {
     my @properties = @_;
-	my ($name, $stock_id, $label, $accelerator, $tooltip, $callback, $is_active);
+    my ($name, $stock_id, $label, $accelerator, $tooltip,
+      $callback, $is_active);
     for my $p(@properties) {
 	  if(ref($p) eq 'ARRAY') {
         $name        = $p->[0];
@@ -571,7 +579,7 @@ sub Gtk3::ActionGroup::add_radio_actions {
 
   my $process = sub {
     my ($group, @properties) = @_;
-	my ($name, $stock_id, $label, $accelerator, $tooltip, $entry_value);
+    my ($name, $stock_id, $label, $accelerator, $tooltip, $entry_value);
 	#croak "not enough items in array form of radio action entry.\n"
 	#. "expecting [ name, stock_id, label, accelerator, "
 	#. "tooltip, value ]\n"
