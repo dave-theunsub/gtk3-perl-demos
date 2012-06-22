@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use lib '.';
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
@@ -44,13 +43,13 @@ sub do_spinner {
         $box->add($hbox);
 
         # Disabled
-        my $hbox2 = Gtk3::Box->new( 'horizontal', 5 );
-		$hbox2->set_homogeneous( FALSE );
+        $hbox = Gtk3::Box->new( 'horizontal', 5 );
+		$hbox->set_homogeneous( FALSE );
         $spinner2 = Gtk3::Spinner->new();
-        $hbox2->add($spinner2);
-        $hbox2->add( Gtk3::Entry->new() );
-        $box->add($hbox2);
-        $hbox2->set_sensitive(FALSE);
+        $hbox->add($spinner2);
+        $hbox->add( Gtk3::Entry->new() );
+        $box->add($hbox);
+        $hbox->set_sensitive(FALSE);
 
         my $play_btn = Gtk3::Button->new_from_stock('gtk-media-play');
         $play_btn->signal_connect( clicked => \&on_play_clicked );

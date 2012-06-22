@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-# Pull in standard libraries
-use lib '.';
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
