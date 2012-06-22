@@ -460,6 +460,9 @@ sub _unpack_columns_and_values {
 sub Gtk3::ActionGroup::add_actions {
   my ($self, $entries, $user_data) = @_;
 
+  croak 'actions must be a reference to an array of action entries'
+    unless ( ref($entries) eq 'ARRAY' );
+
   croak 'action array is empty'
     unless (@$entries);
 
@@ -503,6 +506,9 @@ sub Gtk3::ActionGroup::add_actions {
 
 sub Gtk3::ActionGroup::add_toggle_actions {
   my ($self, $entries, $user_data) = @_;
+
+  croak 'entries must be a reference to an array of toggle action entries'
+    unless ( ref($entries) eq 'ARRAY' );
 
   croak 'toggle action array is empty'
     unless (@$entries);
@@ -553,6 +559,10 @@ sub Gtk3::ActionGroup::add_toggle_actions {
 
 sub Gtk3::ActionGroup::add_radio_actions {
   my ($self, $entries, $value, $on_change, $user_data) = @_;
+
+  croak 'radio_action_entries must be a reference to '
+  . 'an array of action entries'
+  unless ( ref($entries) eq 'ARRAY' );
 
   croak 'radio action array is empty'
     unless (@$entries);
