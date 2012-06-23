@@ -1,13 +1,14 @@
 package Gtk3;
 {
-  $Gtk3::VERSION = '0.004';
+  $Gtk3::VERSION = '0.006';
 }
 
 use strict;
 use warnings;
 use Carp qw/croak/;
+use Cairo::GObject;
 use Glib::Object::Introspection;
-use Glib qw/TRUE FALSE/;
+use Glib qw(TRUE FALSE);
 use Exporter;
 
 our @ISA = qw(Exporter);
@@ -15,6 +16,18 @@ our @ISA = qw(Exporter);
 my $_GTK_BASENAME = 'Gtk';
 my $_GTK_VERSION = '3.0';
 my $_GTK_PACKAGE = 'Gtk3';
+
+my $_GDK_BASENAME = 'Gdk';
+my $_GDK_VERSION = '3.0';
+my $_GDK_PACKAGE = 'Gtk3::Gdk';
+
+my $_GDK_PIXBUF_BASENAME = 'GdkPixbuf';
+my $_GDK_PIXBUF_VERSION = '2.0';
+my $_GDK_PIXBUF_PACKAGE = 'Gtk3::Gdk';
+
+my $_PANGO_BASENAME = 'Pango';
+my $_PANGO_VERSION = '1.0';
+my $_PANGO_PACKAGE = 'Pango';
 
 my %_GTK_NAME_CORRECTIONS = (
   'Gtk3::stock_add' => 'Gtk3::Stock::add',
@@ -24,6 +37,7 @@ my %_GTK_NAME_CORRECTIONS = (
   'Gtk3::stock_set_translate_func' => 'Gtk3::Stock::set_translate_func',
 );
 my @_GTK_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
+  Gtk3::Builder::get_objects
   Gtk3::CellLayout::get_cells
   Gtk3::Stock::list_ids
   Gtk3::TreePath::get_indices
@@ -46,18 +60,6 @@ my @_GTK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
 my @_GDK_PIXBUF_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
   Gtk3::Gdk::Pixbuf::get_formats
 /;
-
-my $_GDK_BASENAME = 'Gdk';
-my $_GDK_VERSION = '3.0';
-my $_GDK_PACKAGE = 'Gtk3::Gdk';
-
-my $_GDK_PIXBUF_BASENAME = 'GdkPixbuf';
-my $_GDK_PIXBUF_VERSION = '2.0';
-my $_GDK_PIXBUF_PACKAGE = 'Gtk3::Gdk';
-
-my $_PANGO_BASENAME = 'Pango';
-my $_PANGO_VERSION = '1.0';
-my $_PANGO_PACKAGE = 'Pango';
 
 sub import {
   my $class = shift;
@@ -142,6 +144,101 @@ sub Gtk3::main_quit {
   Glib::Object::Introspection->invoke ($_GTK_BASENAME, undef, 'main_quit');
 }
 
+sub Gtk3::Builder::add_objects_from_file {
+  my ($builder, $filename, @rest) = @_;
+  my $ref = _rest_to_ref (\@rest);
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Builder', 'add_objects_from_file',
+    $builder, $filename, $ref);
+}
+
+sub Gtk3::Builder::add_objects_from_string {
+  my ($builder, $string, @rest) = @_;
+  my $ref = _rest_to_ref (\@rest);
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Builder', 'add_objects_from_string',
+    $builder, $string, length $string, $ref);
+}
+
+sub Gtk3::Builder::add_from_string {
+  my ($builder, $string) = @_;
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Builder', 'add_from_string',
+    $builder, $string, length $string);
+}
+
+# Copied from Gtk2.pm
+sub Gtk3::Builder::connect_signals {
+  my $builder = shift;
+  my $user_data = shift;
+
+  my $do_connect = sub {
+    my ($object,
+        $signal_name,
+        $user_data,
+        $connect_object,
+        $flags,
+        $handler) = @_;
+    my $func = ($flags & 'after') ? 'signal_connect_after' : 'signal_connect';
+    # we get connect_object when we're supposed to call
+    # signal_connect_object, which ensures that the data (an object)
+    # lives as long as the signal is connected.  the bindings take
+    # care of that for us in all cases, so we only have signal_connect.
+    # if we get a connect_object, just use that instead of user_data.
+    $object->$func($signal_name => $handler,
+                   $connect_object ? $connect_object : $user_data);
+  };
+
+  # $builder->connect_signals ($user_data)
+  # $builder->connect_signals ($user_data, $package)
+  if ($#_ <= 0) {
+    my $package = shift;
+    $package = caller unless defined $package;
+
+    $builder->connect_signals_full(sub {
+      my ($builder,
+          $object,
+          $signal_name,
+          $handler_name,
+          $connect_object,
+          $flags) = @_;
+
+      no strict qw/refs/;
+
+      my $handler = $handler_name;
+      if (ref $package) {
+        $handler = sub { $package->$handler_name(@_) };
+      } else {
+        if ($package && $handler !~ /::/) {
+          $handler = $package.'::'.$handler_name;
+        }
+      }
+
+      $do_connect->($object, $signal_name, $user_data, $connect_object,
+                    $flags, $handler);
+    });
+  }
+
+  # $builder->connect_signals ($user_data, %handlers)
+  else {
+    my %handlers = @_;
+
+    $builder->connect_signals_full(sub {
+      my ($builder,
+          $object,
+          $signal_name,
+          $handler_name,
+          $connect_object,
+          $flags) = @_;
+
+      return unless exists $handlers{$handler_name};
+
+      $do_connect->($object, $signal_name, $user_data, $connect_object,
+                    $flags, $handlers{$handler_name});
+    });
+  }
+}
+
 sub Gtk3::Button::new {
   my ($class, $label) = @_;
   if (defined $label) {
@@ -152,12 +249,30 @@ sub Gtk3::Button::new {
   }
 }
 
+sub Gtk3::CheckMenuItem::new {
+  my ($class, $mnemonic) = @_;
+  if (defined $mnemonic) {
+    return $class->new_with_mnemonic ($mnemonic);
+  }
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'CheckMenuItem', 'new', @_);
+}
+
 sub Gtk3::HBox::new {
   my ($class, $homogeneous, $spacing) = @_;
   $homogeneous = 5 unless defined $homogeneous;
   $spacing = 0 unless defined $spacing;
   return Glib::Object::Introspection->invoke (
     $_GTK_BASENAME, 'HBox', 'new', $class, $homogeneous, $spacing);
+}
+
+sub Gtk3::ImageMenuItem::new {
+  my ($class, $mnemonic) = @_;
+  if (defined $mnemonic) {
+    return $class->new_with_mnemonic ($mnemonic);
+  }
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'ImageMenuItem', 'new', @_);
 }
 
 sub Gtk3::ListStore::new {
@@ -171,6 +286,44 @@ sub Gtk3::ListStore::get {
 
 sub Gtk3::ListStore::set {
   return _common_tree_model_set ('ListStore', @_);
+}
+
+sub Gtk3::Menu::popup {
+  my $self = shift;
+  $self->popup_for_device (undef, @_);
+}
+
+sub Gtk3::Menu::popup_for_device {
+  my ($menu, $device, $parent_menu_shell, $parent_menu_item, $func, $data, $button, $activate_time) = @_;
+  use Data::Dumper;
+  print Dumper(@_), "\n";
+  my $real_func = $func ? sub {
+    my @stuff = eval { $func->(@_) };
+    if ($@) {
+      warn "*** menu position callback ignoring error: $@";
+    }
+    if (@stuff == 3) {
+      return (@stuff);
+    } elsif (@stuff == 2) {
+      return (@stuff, Glib::FALSE); # provide a default for push_in
+    } else {
+      warn "*** menu position callback must return two integers " .
+           "(x, y) or two integers and a boolean (x, y, push_in)";
+      return (0, 0, Glib::FALSE);
+    }
+  } : undef;
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Menu', 'popup_for_device',
+    $menu, $device, $parent_menu_shell, $parent_menu_item, $real_func, $data, $button, $activate_time);
+}
+
+sub Gtk3::MenuItem::new {
+  my ($class, $mnemonic) = @_;
+  if (defined $mnemonic) {
+    return $class->new_with_mnemonic ($mnemonic);
+  }
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'MenuItem', 'new', @_);
 }
 
 sub Gtk3::MessageDialog::new {
@@ -457,11 +610,21 @@ sub _unpack_columns_and_values {
   return (\@columns, \@values);
 }
 
+sub _rest_to_ref {
+  my ($rest) = @_;
+  local $@;
+  if (scalar @$rest == 1 && eval { defined $rest->[0]->[0] }) {
+    return $rest->[0];
+  } else {
+    return $rest;
+  }
+}
+
 sub Gtk3::ActionGroup::add_actions {
   my ($self, $entries, $user_data) = @_;
 
   croak 'actions must be a reference to an array of action entries'
-    unless ( ref($entries) eq 'ARRAY' );
+    unless ( ref($entries) eq 'ARRAY' );                                                                                                                                                                   
 
   croak 'action array is empty'
     unless (@$entries);
@@ -493,7 +656,7 @@ sub Gtk3::ActionGroup::add_actions {
     if ($label) {
       $label   = $self->translate_string($label);
     }
-	if ($tooltip) {
+    if ($tooltip) {
       $tooltip = $self->translate_string($tooltip);
     }
 
@@ -525,7 +688,7 @@ sub Gtk3::ActionGroup::add_toggle_actions {
     my ($name, $stock_id, $label, $accelerator, $tooltip,
       $callback, $is_active);
     for my $p(@properties) {
-	  if(ref($p) eq 'ARRAY') {
+      if(ref($p) eq 'ARRAY') {
         $name        = $p->[0];
         $stock_id    = $p->[1];
         $label       = $p->[2];
@@ -541,10 +704,10 @@ sub Gtk3::ActionGroup::add_toggle_actions {
         $tooltip     = $p->{tooltip};
         $callback    = $p->{callback};
         $is_active   = $p->{is_active};
-	  } else {
+      } else {
         croak 'action entry must be a hash or an array';
       }
-	}
+    }
 
     $label   = $self->translate_string($label);
     $tooltip = $self->translate_string($tooltip);
@@ -559,7 +722,7 @@ sub Gtk3::ActionGroup::add_toggle_actions {
 
     $self->add_action_with_accel ($action, $accelerator);
   };
-
+                                                                                                                                                                                                           
   for my $e (@$entries) {
     $process->($e);
   }
@@ -580,13 +743,13 @@ sub Gtk3::ActionGroup::add_radio_actions {
   my $process = sub {
     my ($group, @properties) = @_;
     my ($name, $stock_id, $label, $accelerator, $tooltip, $entry_value);
-	#croak "not enough items in array form of radio action entry.\n"
-	#. "expecting [ name, stock_id, label, accelerator, "
-	#. "tooltip, value ]\n"
-	#unless ( scalar @$p == 6 );
+    #croak "not enough items in array form of radio action entry.\n"
+    #. "expecting [ name, stock_id, label, accelerator, "
+    #. "tooltip, value ]\n"
+    #unless ( scalar @$p == 6 );
 
-	for my $p (@properties) {
-	  if (ref($p) eq 'ARRAY') {
+    for my $p (@properties) {
+      if (ref($p) eq 'ARRAY') {
         $name        = $p->[0];
         $stock_id    = $p->[1];
         $label       = $p->[2];
@@ -605,15 +768,15 @@ sub Gtk3::ActionGroup::add_radio_actions {
       }
     }
 
-	if ($label) {
+    if ($label) {
       $label   = $self->translate_string($label);
     }
-	if ($tooltip) {
+    if ($tooltip) {
       $tooltip = $self->translate_string($tooltip);
     }
 
     my $action = Gtk3::RadioAction->new (
-      $name, $label, $tooltip, $stock_id, $entry_value);
+      $name, $label, $tooltip, $stock_id, $entry_value);                                                                                                                                                   
     $action->join_group($group);
 
     if ($value == $entry_value) {
@@ -677,6 +840,37 @@ L<http://mail.gnome.org/mailman/listinfo/gtk-perl-list>.
 
 Also have a look at the gtk2-perl website and sourceforge project page,
 L<http://gtk2-perl.sourceforge.net>.
+
+=head2 Porting from Gtk2 to Gtk3
+
+The majority of the API has not changed, so as a first approximation you can
+run C<< s/Gtk2/Gtk3/ >> on your application.  A big exception to this rule is
+APIs that were deprecated in gtk+ 2.x -- these were all removed from gtk+ 3.0
+and thus from L<Gtk3>.  The migration guide at
+L<http://developer.gnome.org/gtk3/stable/migrating.html> describes what to use
+instead.  Apart from this, here is a list of some other incompatible
+differences between L<Gtk2> and L<Gtk3>:
+
+=over
+
+=item * The call syntax for class-static methods is now always
+C<< Gtk3::Stock::lookup >> instead of C<< Gtk3::Stock->lookup >>.
+
+=item * The %Gtk2::Gdk::Keysyms hash is gone; instead of C<<
+Gtk2::Gdk::Keysyms{XYZ} >>, use C<< Gtk3::Gdk::KEY_XYZ >>.
+
+=item * The Gtk2::Pango compatibility wrapper was not carried over; simply use
+the namespace "Pango" everywhere.  It gets set up automatically when loading
+L<Gtk3>.
+
+=item * The Gtk3::Menu menu position callback passed to popup() does not
+receive x and y parameters anymore.
+
+=back
+
+Note also that Gtk3::CHECK_VERSION will always fail when passed 2.y.z, so if
+you have any existing version checks in your code, you will most likely need to
+remove them.
 
 =head1 SEE ALSO
 
