@@ -20,18 +20,24 @@ sub do_links {
         $window->set_border_width(12);
         $window->signal_connect( destroy => sub { Gtk3->main_quit } );
 
-		my $icon = 'gtk-logo-rgb.gif';
-        if( -e $icon ) {
+        my $icon = 'gtk-logo-rgb.gif';
+        if ( -e $icon ) {
             my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-            my $transparent = $pixbuf->add_alpha (TRUE, 0xff, 0xff, 0xff);
-            $window->set_icon( $transparent );                                 
+            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+            $window->set_icon($transparent);
         }
 
         my $label = Gtk3::Label->new(
                   'Some <a href="http://en.wikipedia.org/wiki/Text"'
                 . "title=\"plain text\">text</a> may be marked up\n"
                 . "as hyperlinks, which can be clicked\n"
-                . "or activated via <a href=\"keynav\">keynav</a>" );
+                . "or activated via <a href=\"keynav\">keynav</a>\n"
+                . "and they work fine with other markup, like when\n"
+                . "searching on <a href=\"http://www.google.com/\">"
+                . "<span color=\"#0266C8\">G</span><span color=\"#F90101\">o</span>"
+                . "<span color=\"#F2B50F\">o</span><span color=\"#0266C8\">g</span>"
+                . "<span color=\"#00933B\">l</span><span color=\"#F90101\">e</span>"
+                . "</a>." );
         $label->set_use_markup(TRUE);
         $label->signal_connect( 'activate-link' => \&activate_link );
         $window->add($label);
