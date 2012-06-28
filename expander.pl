@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package expander;
+
 use strict;
 use warnings;
 
@@ -60,3 +62,5 @@ sub do_expander {
 
     return $window;
 }
+
+1;

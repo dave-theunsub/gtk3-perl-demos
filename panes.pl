@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package panes;
+
 use strict;
 use warnings;
 
@@ -154,3 +156,5 @@ sub toggle_resize {
         $paned->pack2( $child, $widget->get_active, 0 );
     }
 }
+
+1;

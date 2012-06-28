@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+package assistant;
+
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
@@ -153,3 +155,4 @@ sub create_assistant {
         $assistant->destroy();
     }
 }
+1;

@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package overlay;
+
 use strict;
 use warnings;
 
@@ -174,3 +176,5 @@ sub do_overlay {
 
     return $window;
 }
+
+1;

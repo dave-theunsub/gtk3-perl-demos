@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package infobar;
+
 use strict;
 use warnings;
 
@@ -113,3 +115,5 @@ sub on_bar_response {
     $dialog->run();
     $dialog->destroy();
 }
+
+1;

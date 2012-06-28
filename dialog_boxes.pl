@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package dialog_boxes;
+
 use strict;
 use warnings;
 
@@ -144,3 +146,5 @@ sub interactive_dialog_clicked {
     }
     $dialog->destroy;
 }
+
+1;

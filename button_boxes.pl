@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package button_boxes;
+
 use strict;
 use warnings;
 
@@ -102,3 +104,5 @@ sub create_bbox {
 
     return $frame;
 }
+
+1;

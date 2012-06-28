@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package uimanager;
+
 use strict;
 use warnings;
 
@@ -226,3 +228,5 @@ sub get_volume_entries {
   );
   return @vol_entries;
 }
+
+1;

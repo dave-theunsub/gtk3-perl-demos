@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package pickers;
+
 use strict;
 use warnings;
 
@@ -82,3 +84,5 @@ sub do_pickers {
 }
 
 Gtk3->main();
+
+1;

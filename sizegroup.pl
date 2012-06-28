@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package sizegroup;
+
 use strict;
 use warnings;
 
@@ -119,3 +121,5 @@ sub toggle_grouping {
 
     $size_group->set_mode($new_mode);
 }
+
+1;

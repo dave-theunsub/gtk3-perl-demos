@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package menus;
+
 use strict;
 use warnings;
 
@@ -122,3 +124,5 @@ sub create_menu {
 
     return $menu;
 }
+
+1;

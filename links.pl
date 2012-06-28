@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package links;
+
 use strict;
 use warnings;
 
@@ -80,3 +82,5 @@ sub activate_link {
 sub response_cb {
     $dialog->destroy();
 }
+
+1;
