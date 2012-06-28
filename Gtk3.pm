@@ -6,7 +6,7 @@ package Gtk3;
 use strict;
 use warnings;
 use Carp qw/croak/;
-use Cairo::GObject;
+
 use Glib::Object::Introspection;
 use Glib qw(TRUE FALSE);
 use Exporter;
