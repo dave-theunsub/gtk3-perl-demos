@@ -5,7 +5,6 @@ use warnings;
 
 use constant GTK_RESPONSE_NONE => -1;
 
-use lib '.';
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
