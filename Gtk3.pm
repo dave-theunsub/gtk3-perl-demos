@@ -648,6 +648,11 @@ sub Gtk3::Window::new {
 }
 
 # Gdk
+sub Gtk3::Gdk::Event::time {
+  my $event = shift;
+  return Glib::Object::Introspection->invoke (
+    $_GDK_BASENAME, 'Event', 'get_time', $event );
+}
 
 sub Gtk3::Gdk::Window::new {
   my ($class, $parent, $attr, $attr_mask) = @_;
