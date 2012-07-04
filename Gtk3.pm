@@ -1,14 +1,10 @@
 package Gtk3;
-{
-  $Gtk3::VERSION = '0.006';
-}
 
 use strict;
 use warnings;
 use Carp qw/croak/;
-
+use Cairo::GObject;
 use Glib::Object::Introspection;
-use Glib qw(TRUE FALSE);
 use Exporter;
 
 our @ISA = qw(Exporter);
@@ -37,12 +33,12 @@ my %_GTK_NAME_CORRECTIONS = (
   'Gtk3::stock_set_translate_func' => 'Gtk3::Stock::set_translate_func',
 );
 my @_GTK_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
+  Gtk3::ActionGroup::list_actions
   Gtk3::Builder::get_objects
   Gtk3::CellLayout::get_cells
   Gtk3::Stock::list_ids
   Gtk3::TreePath::get_indices
   Gtk3::Window::list_toplevels
-  Gtk3::ActionGroup::list_actions
 /;
 my @_GTK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
   Gtk3::Stock::lookup
@@ -142,6 +138,218 @@ sub Gtk3::main {
 sub Gtk3::main_quit {
   # Ignore any arguments passed in.
   Glib::Object::Introspection->invoke ($_GTK_BASENAME, undef, 'main_quit');
+}
+
+{
+  my $global_about_dialog = undef;
+  my $about_dialog_key = '__gtk3_about_dialog';
+
+  sub Gtk3::show_about_dialog {
+    # For backwards-compatibility, optionally accept and discard a class
+    # argument.
+    my $parent_or_class = shift;
+    my $parent = defined $parent_or_class && $parent_or_class eq 'Gtk3'
+               ? shift
+               : $parent_or_class;
+    my %props = @_;
+    my $dialog = defined $parent
+               ? $parent->{$about_dialog_key}
+               : $global_about_dialog;
+
+    if (!$dialog) {
+      $dialog = Gtk3::AboutDialog->new;
+      $dialog->signal_connect (delete_event => \&Gtk3::Widget::hide_on_delete);
+      # FIXME: We can't actually do this fully correctly, because the license
+      # and credits subdialogs are private.
+      $dialog->signal_connect (response => \&Gtk3::Widget::hide);
+      foreach my $prop (keys %props) {
+        $dialog->set ($prop => $props{$prop});
+      }
+      if ($parent) {
+        $dialog->set_modal (Glib::TRUE);
+        $dialog->set_transient_for ($parent);
+        $dialog->set_destroy_with_parent (Glib::TRUE);
+        $parent->{$about_dialog_key} = $dialog;
+      } else {
+        $global_about_dialog = $dialog;
+      }
+    }
+
+    $dialog->present;
+  }
+}
+
+sub Gtk3::ActionGroup::add_actions {
+  my ($self, $entries, $user_data) = @_;
+
+  croak 'actions must be a reference to an array of action entries'
+    unless (ref($entries) eq 'ARRAY');
+
+  croak 'action array is empty'
+    unless (@$entries);
+
+  my $process = sub {
+    my ($p) = @_;
+    my ($name, $stock_id, $label, $accelerator, $tooltip, $callback);
+
+    if (ref($p) eq 'ARRAY') {
+      $name        = $p->[0];
+      $stock_id    = $p->[1];
+      $label       = $p->[2];
+      $accelerator = $p->[3];
+      $tooltip     = $p->[4];
+      $callback    = $p->[5];
+    } elsif (ref($p) eq 'HASH') {
+      $name        = $p->{name};
+      $stock_id    = $p->{stock_id};
+      $label       = $p->{label};
+      $accelerator = $p->{accelerator};
+      $tooltip     = $p->{tooltip};
+      $callback    = $p->{callback};
+    } else {
+      croak 'action entry must be a reference to a hash or an array';
+    }
+
+    if (defined($label)) {
+      $label   = $self->translate_string($label);
+    }
+    if (defined($tooltip)) {
+      $tooltip = $self->translate_string($tooltip);
+    }
+
+    my $action = Gtk3::Action->new ($name, $label, $tooltip, $stock_id);
+
+    if ($callback) {
+      $action->signal_connect ('activate', $callback, $user_data);
+    }
+    $self->add_action_with_accel ($action, $accelerator);
+  };
+
+  for my $e (@$entries) {
+    $process->($e);
+  }
+}
+
+sub Gtk3::ActionGroup::add_toggle_actions {
+  my ($self, $entries, $user_data) = @_;
+
+  croak 'entries must be a reference to an array of toggle action entries'
+    unless (ref($entries) eq 'ARRAY');
+
+  croak 'toggle action array is empty'
+    unless (@$entries);
+
+  my $process = sub {
+    my ($p) = @_;
+    my ($name, $stock_id, $label, $accelerator, $tooltip,
+      $callback, $is_active);
+
+    if (ref($p) eq 'ARRAY') {
+      $name        = $p->[0];
+      $stock_id    = $p->[1];
+      $label       = $p->[2];
+      $accelerator = $p->[3];
+      $tooltip     = $p->[4];
+      $callback    = $p->[5];
+      $is_active   = $p->[6];
+    } elsif (ref($p) eq 'HASH') {
+      $name        = $p->{name};
+      $stock_id    = $p->{stock_id};
+      $label       = $p->{label};
+      $accelerator = $p->{accelerator};
+      $tooltip     = $p->{tooltip};
+      $callback    = $p->{callback};
+      $is_active   = $p->{is_active};
+    } else {
+      croak 'action entry must be a hash or an array';
+    }
+
+    if (defined($label)) {
+      $label   = $self->translate_string($label);
+    }
+    if (defined($tooltip)) {
+      $tooltip = $self->translate_string($tooltip);
+    }
+
+    my $action = Gtk3::ToggleAction->new (
+      $name, $label, $tooltip, $stock_id);
+    $action->set_active ($is_active);
+
+    if ($callback) {
+      $action->signal_connect ('activate', $callback, $user_data);
+    }
+
+    $self->add_action_with_accel ($action, $accelerator);
+  };
+
+  for my $e (@$entries) {
+    $process->($e);
+  }
+}
+
+sub Gtk3::ActionGroup::add_radio_actions {
+  my ($self, $entries, $value, $on_change, $user_data) = @_;
+
+  croak 'radio_action_entries must be a reference to '
+    . 'an array of action entries'
+    unless (ref($entries) eq 'ARRAY');
+
+  croak 'radio action array is empty'
+    unless (@$entries);
+
+  my $first_action = undef;
+
+  my $process = sub {
+    my ($group, $p) = @_;
+    my ($name, $stock_id, $label, $accelerator, $tooltip, $entry_value);
+
+    if (ref($p) eq 'ARRAY') {
+      $name        = $p->[0];
+      $stock_id    = $p->[1];
+      $label       = $p->[2];
+      $accelerator = $p->[3];
+      $tooltip     = $p->[4];
+      $entry_value = $p->[5];
+    } elsif (ref($p) eq 'HASH') {
+      $name        = $p->{name};
+      $stock_id    = $p->{stock_id};
+      $label       = $p->{label};
+      $accelerator = $p->{accelerator};
+      $tooltip     = $p->{tooltip};
+      $entry_value = $p->{value};
+    } else {
+      croak 'radio action entries neither hash nor array';
+    }
+
+    if (defined($label)) {
+      $label   = $self->translate_string($label);
+    }
+    if (defined($tooltip)) {
+      $tooltip = $self->translate_string($tooltip);
+    }
+
+    my $action = Gtk3::RadioAction->new (
+      $name, $label, $tooltip, $stock_id, $entry_value);
+
+    $action->join_group($group);
+
+    if ($value == $entry_value) {
+      $action->set_active(Glib::TRUE);
+    }
+    $self->add_action_with_accel($action, $accelerator);
+    return $action;
+  };
+
+  for my $e (@$entries) {
+    my $group = $process->($first_action, $e);
+    if (!$first_action) {
+      $first_action = $group;
+    }
+  }
+
+  if ($first_action && $on_change) {
+    $first_action->signal_connect ('changed', $on_change, $user_data);
+  }
 }
 
 sub Gtk3::Builder::add_objects_from_file {
@@ -295,8 +503,6 @@ sub Gtk3::Menu::popup {
 
 sub Gtk3::Menu::popup_for_device {
   my ($menu, $device, $parent_menu_shell, $parent_menu_item, $func, $data, $button, $activate_time) = @_;
-  use Data::Dumper;
-  print Dumper(@_), "\n";
   my $real_func = $func ? sub {
     my @stuff = eval { $func->(@_) };
     if ($@) {
@@ -617,184 +823,6 @@ sub _rest_to_ref {
     return $rest->[0];
   } else {
     return $rest;
-  }
-}
-
-sub Gtk3::ActionGroup::add_actions {
-  my ($self, $entries, $user_data) = @_;
-
-  croak 'actions must be a reference to an array of action entries'
-    unless ( ref($entries) eq 'ARRAY' );                                                                                                                                                                   
-
-  croak 'action array is empty'
-    unless (@$entries);
-
-  my $process = sub {
-    my (@properties) = @_;
-    my ($name, $stock_id, $label, $accelerator, $tooltip, $callback);
-
-    for my $p (@properties) {
-      if (ref($p) eq 'ARRAY') {
-        $name        = $p->[0];
-        $stock_id    = $p->[1];
-        $label       = $p->[2];
-        $accelerator = $p->[3];
-        $tooltip     = $p->[4];
-        $callback    = $p->[5];
-      } elsif (ref($p) eq 'HASH') {
-        $name        = $p->{name};
-        $stock_id    = $p->{stock_id};
-        $label       = $p->{label};
-        $accelerator = $p->{accelerator};
-        $tooltip     = $p->{tooltip};
-        $callback    = $p->{callback};
-      } else {
-        croak 'action entry must be a hash or an array';
-      }
-    }
-
-    if ($label) {
-      $label   = $self->translate_string($label);
-    }
-    if ($tooltip) {
-      $tooltip = $self->translate_string($tooltip);
-    }
-
-    my $action = Gtk3::Action->new (
-      $name, $label, $tooltip, $stock_id);
-
-    if ($callback) {
-      $action->signal_connect ('activate', $callback, $user_data);
-    }
-    $self->add_action_with_accel ($action, $accelerator);
-  };
-
-  for my $e (@$entries) {
-    $process->($e);
-  }
-}
-
-sub Gtk3::ActionGroup::add_toggle_actions {
-  my ($self, $entries, $user_data) = @_;
-
-  croak 'entries must be a reference to an array of toggle action entries'
-    unless ( ref($entries) eq 'ARRAY' );
-
-  croak 'toggle action array is empty'
-    unless (@$entries);
-
-  my $process = sub {
-    my @properties = @_;
-    my ($name, $stock_id, $label, $accelerator, $tooltip,
-      $callback, $is_active);
-    for my $p(@properties) {
-      if(ref($p) eq 'ARRAY') {
-        $name        = $p->[0];
-        $stock_id    = $p->[1];
-        $label       = $p->[2];
-        $accelerator = $p->[3];
-        $tooltip     = $p->[4];
-        $callback    = $p->[5];
-        $is_active   = $p->[6];
-      } elsif(ref($p) eq 'HASH') {
-        $name        = $p->{name};
-        $stock_id    = $p->{stock_id};
-        $label       = $p->{label};
-        $accelerator = $p->{accelerator};
-        $tooltip     = $p->{tooltip};
-        $callback    = $p->{callback};
-        $is_active   = $p->{is_active};
-      } else {
-        croak 'action entry must be a hash or an array';
-      }
-    }
-
-    $label   = $self->translate_string($label);
-    $tooltip = $self->translate_string($tooltip);
-
-    my $action = Gtk3::ToggleAction->new (
-      $name, $label, $tooltip, $stock_id);
-    $action->set_active ($is_active);
-
-    if ($callback) {
-      $action->signal_connect ('activate', $callback, $user_data);
-    }
-
-    $self->add_action_with_accel ($action, $accelerator);
-  };
-                                                                                                                                                                                                           
-  for my $e (@$entries) {
-    $process->($e);
-  }
-}
-
-sub Gtk3::ActionGroup::add_radio_actions {
-  my ($self, $entries, $value, $on_change, $user_data) = @_;
-
-  croak 'radio_action_entries must be a reference to '
-  . 'an array of action entries'
-  unless ( ref($entries) eq 'ARRAY' );
-
-  croak 'radio action array is empty'
-    unless (@$entries);
-
-  my $first_action = undef;
-
-  my $process = sub {
-    my ($group, @properties) = @_;
-    my ($name, $stock_id, $label, $accelerator, $tooltip, $entry_value);
-    #croak "not enough items in array form of radio action entry.\n"
-    #. "expecting [ name, stock_id, label, accelerator, "
-    #. "tooltip, value ]\n"
-    #unless ( scalar @$p == 6 );
-
-    for my $p (@properties) {
-      if (ref($p) eq 'ARRAY') {
-        $name        = $p->[0];
-        $stock_id    = $p->[1];
-        $label       = $p->[2];
-        $accelerator = $p->[3];
-        $tooltip     = $p->[4];
-        $entry_value = $p->[5];
-      } elsif (ref($p) eq 'HASH') {
-        $name        = $p->{name};
-        $stock_id    = $p->{stock_id};
-        $label       = $p->{label};
-        $accelerator = $p->{accelerator};
-        $tooltip     = $p->{tooltip};
-        $entry_value = $p->{value};
-      } else {
-        croak 'radio action entries neither hash nor array';
-      }
-    }
-
-    if ($label) {
-      $label   = $self->translate_string($label);
-    }
-    if ($tooltip) {
-      $tooltip = $self->translate_string($tooltip);
-    }
-
-    my $action = Gtk3::RadioAction->new (
-      $name, $label, $tooltip, $stock_id, $entry_value);                                                                                                                                                   
-    $action->join_group($group);
-
-    if ($value == $entry_value) {
-      $action->set_active(TRUE);
-    }
-    $self->add_action_with_accel($action, $accelerator);
-    return $action;
- };
-
-  for my $e (@$entries) {
-    my $group = $process->($first_action, $e);
-    if (!$first_action) {
-      $first_action = $group;
-    }
-  }
-
-  if ($first_action && $on_change) {
-    $first_action->signal_connect ('changed', $on_change, $user_data);
   }
 }
 
