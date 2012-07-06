@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+#
+# Entry Buffer
+#
+# GtkEntryBuffer provides the text content in a GtkEntry.
+#
 
 package entry_buffer;
 
@@ -33,7 +38,7 @@ sub do_entry_buffer {
         # This box will hold our label and entries
         my $box = Gtk3::Box->new( 'vertical', 5 );
         $box->set_border_width(5);
-		$box->set_homogeneous( FALSE );
+        $box->set_homogeneous(FALSE);
         $window->get_content_area()->add($box);
 
         my $label = Gtk3::Label->new('');

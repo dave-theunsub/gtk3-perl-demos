@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+#
+# Application main window
+#
+# Demonstrates a typical application window, with menubar, toolbar, statusbar.
+#
 
 package appwindow;
 

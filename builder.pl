@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+# Builder
+# Demonstrates an interface loaded from a XML description.
+#
 
 use strict;
 use warnings;
@@ -46,7 +50,7 @@ sub do_builder {
         $window->destroy();
     }
 
-	return $window;
+    return $window;
 }
 
 sub demo_find_file {

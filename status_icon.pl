@@ -1,6 +1,12 @@
 #!/usr/bin/perl
-# This is a mix of the Python example and
-# one Zentara wrote for Gtk2.
+#
+# Status Icon
+#
+# This is a simple example that shows how to create a status icon that
+# will appear in the "notification area" in GNOME/KDE, or "system tray"
+# in Windows.
+#
+# This is a mix of the Python example and one Zentara wrote for Gtk2.
 
 use strict;
 use warnings;
@@ -31,3 +37,5 @@ sub do_status_icon_demo {
         } );
     Gtk3->main();
 }
+
+1;

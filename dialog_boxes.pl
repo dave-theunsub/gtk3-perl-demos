@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+# Dialog and Message Boxes
+#
+# Dialog widgets are used to pop up a transient window for user feedback.
 
 package dialog_boxes;
 

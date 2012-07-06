@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+# Button Boxes
+#
+# The Button Box widgets are used to arrange buttons with padding.
 
 package button_boxes;
 
@@ -19,15 +23,15 @@ sub do_button_box {
         $window->set_title('Button Boxes');
         $window->set_border_width(10);
         $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-		my $icon = 'gtk-logo-rgb.gif';
-		if( -e $icon ) {
+        my $icon = 'gtk-logo-rgb.gif';
+        if ( -e $icon ) {
             my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-            my $transparent = $pixbuf->add_alpha (TRUE, 0xff, 0xff, 0xff);
-            $window->set_icon( $transparent );                                 
+            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+            $window->set_icon($transparent);
         }
 
         my $box = Gtk3::Box->new( 'vertical', 0 );
-		$box->set_homogeneous( FALSE );
+        $box->set_homogeneous(FALSE);
         $window->add($box);
 
         my $frame_horiz = Gtk3::Frame->new('Horizontal Button Boxes');
@@ -35,7 +39,7 @@ sub do_button_box {
 
         my $vbox = Gtk3::Box->new( 'vertical', 0 );
         $vbox->set_border_width(10);
-		$vbox->set_homogeneous( FALSE );
+        $vbox->set_homogeneous(FALSE);
         $frame_horiz->add($vbox);
 
         $vbox->pack_start( create_bbox( TRUE, 'Spread', 40, 'spread' ),
@@ -55,7 +59,7 @@ sub do_button_box {
 
         my $hbox = Gtk3::Box->new( 'horizontal', 0 );
         $hbox->set_border_width(10);
-		$hbox->set_homogeneous( FALSE );
+        $hbox->set_homogeneous(FALSE);
         $frame_vert->add($hbox);
 
         $hbox->pack_start( create_bbox( FALSE, 'Spread', 30, 'spread' ),

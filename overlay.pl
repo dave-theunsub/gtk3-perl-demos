@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+#
+# Overlay
+#
+# Stack widgets in static positions over a main widget
+#
 
 package overlay;
 
@@ -21,12 +26,12 @@ sub do_overlay {
         $window->set_border_width(0);
         $window->signal_connect( destroy => sub { Gtk3->main_quit } );
 
-		my $icon = 'gtk-logo-rgb.gif';
-		if( -e $icon ) {
-			my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-			my $transparent = $pixbuf->add_alpha (TRUE, 0xff, 0xff, 0xff);
-			$window->set_icon( $transparent );
-		}
+        my $icon = 'gtk-logo-rgb.gif';
+        if ( -e $icon ) {
+            my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+            $window->set_icon($transparent);
+        }
 
         my $view = Gtk3::TextView->new();
 

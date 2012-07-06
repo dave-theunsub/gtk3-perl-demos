@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+#
+# Expander
+#
+# GtkExpander allows to provide additional content that is initially hidden. This is also known as "disclosure triangle".
+#
 
 package expander;
 
@@ -23,16 +28,16 @@ sub do_expander {
         $window->signal_connect( response => sub { Gtk3->main_quit } );
         $window->signal_connect( destroy  => sub { Gtk3->main_quit } );
 
-		my $icon = 'gtk-logo-rgb.gif';
-        if( -e $icon ) {
+        my $icon = 'gtk-logo-rgb.gif';
+        if ( -e $icon ) {
             my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-            my $transparent = $pixbuf->add_alpha (TRUE, 0xff, 0xff, 0xff);
-            $window->set_icon( $transparent );                                 
+            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+            $window->set_icon($transparent);
         }
 
         my $box = Gtk3::Box->new( 'vertical', 5 );
         $box->set_border_width(5);
-		$box->set_homogeneous( FALSE );
+        $box->set_homogeneous(FALSE);
         $window->get_content_area()->add($box);
 
         my $label = Gtk3::Label->new('');

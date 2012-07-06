@@ -1,4 +1,16 @@
 #!/usr/bin/perl
+#
+# Paned Widgets
+#
+# The GtkHPaned and GtkVPaned Widgets divide their content area
+# into two panes with a divider in between that the user can adjust.
+# A separate child is placed into each pane.
+#
+# There are a number of options that can be set for each pane.
+# This test contains both a horizontal (HPaned) and a vertical
+# (VPaned) widget, and allows you to adjust the options for each
+# side of each widget.
+#
 
 package panes;
 

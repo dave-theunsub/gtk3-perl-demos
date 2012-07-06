@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+#
+# Entry Completion
+#
+# GtkEntryCompletion provides a mechanism for adding support for completion in GtkEntry.
+#
 
 package entry_completion;
 
@@ -49,7 +54,7 @@ sub do_entry_completion {
 
         my $box = Gtk3::Box->new( 'vertical', 5 );
         $box->set_border_width(5);
-		$box->set_homogeneous( FALSE );
+        $box->set_homogeneous(FALSE);
         $window->get_content_area()->add($box);
 
         my $label = Gtk3::Label->new('');

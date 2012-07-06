@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+#
+# Search Entry
+#
+# GtkEntry allows to display icons and progress information.
+# This demo shows how to use these features in a search entry.
+#
 
 use strict;
 use warnings;
@@ -92,6 +98,8 @@ sub do_search_entry {
     } else {
         $window->destroy();
     }
+
+    return $window;
 }
 
 sub show_find_button {
@@ -216,3 +224,5 @@ sub icon_press_cb {
         clear_entry($entry);
     }
 }
+
+1;

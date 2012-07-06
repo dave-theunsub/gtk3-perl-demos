@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+#
+# Description
+#
 
 package foo;
 
@@ -34,4 +37,4 @@ sub do_foo {
     }
 }
 
-    1;
+1;

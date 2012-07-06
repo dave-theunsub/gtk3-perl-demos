@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+#
+# UI Manager
+#
+# The GtkUIManager object allows the easy creation of menus from
+# an array of actions and a description of the menu hierarchy.
+#
 
 package uimanager;
 
@@ -16,9 +22,9 @@ use constant SHAPE_SQUARE    => 0;
 use constant SHAPE_RECTANGLE => 1;
 use constant SHAPE_OVAL      => 2;
 
-use constant SOUND_LOW => 0;
+use constant SOUND_LOW    => 0;
 use constant SOUND_MEDIUM => 1;
-use constant SOUND_HIGH => 2;
+use constant SOUND_HIGH   => 2;
 
 do_ui_manager();
 
@@ -28,56 +34,55 @@ sub do_ui_manager {
     $window->set_border_width(0);
     $window->set_title('UI Manager');
 
-	my $icon = 'gtk-logo-rgb.gif';
-    if( -e $icon ) {
-		my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-        my $transparent = $pixbuf->add_alpha (TRUE, 0xff, 0xff, 0xff);
-        $window->set_icon( $transparent );
+    my $icon = 'gtk-logo-rgb.gif';
+    if ( -e $icon ) {
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+        $window->set_icon($transparent);
     }
-
 
     my @entries = get_entries();
     my @toggle  = get_toggle_entries();
     my @shape   = get_shape_entries();
     my @color   = get_color_entries();
-		my @vol		= get_volume_entries();
+    my @vol     = get_volume_entries();
     my $ui_info = get_ui_info();
 
     my $actions = Gtk3::ActionGroup->new('Actions');
-    $actions->add_actions(\@entries, undef);
-    $actions->add_toggle_actions(\@toggle, undef);
-    $actions->add_radio_actions(\@color, COLOR_RED,
-      \&activate_radio_action);
-    $actions->add_radio_actions(\@shape, SHAPE_OVAL,
-      \&activate_radio_action);
-	$actions->add_radio_actions(\@vol, SOUND_MEDIUM,
-      \&activate_radio_action);
+    $actions->add_actions( \@entries, undef );
+    $actions->add_toggle_actions( \@toggle, undef );
+    $actions->add_radio_actions( \@color, COLOR_RED,
+        \&activate_radio_action );
+    $actions->add_radio_actions( \@shape, SHAPE_OVAL,
+        \&activate_radio_action );
+    $actions->add_radio_actions( \@vol, SOUND_MEDIUM,
+        \&activate_radio_action );
 
     my $ui = Gtk3::UIManager->new();
-    $ui->insert_action_group($actions, 0);
-    $window->add_accel_group($ui->get_accel_group);
-    $ui->add_ui_from_string($ui_info, length($ui_info));
+    $ui->insert_action_group( $actions, 0 );
+    $window->add_accel_group( $ui->get_accel_group );
+    $ui->add_ui_from_string( $ui_info, length($ui_info) );
 
-    my $vbox = Gtk3::Box->new( 'vertical', 0);
-	$vbox->set_homogeneous( FALSE );
+    my $vbox = Gtk3::Box->new( 'vertical', 0 );
+    $vbox->set_homogeneous(FALSE);
     $window->add($vbox);
-    $vbox->pack_start($ui->get_widget('/MenuBar'), FALSE, FALSE, 0);
+    $vbox->pack_start( $ui->get_widget('/MenuBar'), FALSE, FALSE, 0 );
 
     my $label = Gtk3::Label->new("Type\n<alt>\nto start");
-    $label->set_size_request(200, 200);
+    $label->set_size_request( 200, 200 );
     $label->set_halign('center');
     $label->set_valign('center');
-    $vbox->pack_start($label, TRUE, TRUE, 0);
+    $vbox->pack_start( $label, TRUE, TRUE, 0 );
 
-    $vbox->pack_start(Gtk3::HSeparator->new(), FALSE, TRUE, 0);
+    $vbox->pack_start( Gtk3::HSeparator->new(), FALSE, TRUE, 0 );
 
-    my $box2 = Gtk3::Box->new('vertical', 10);
-	$box2->set_homogeneous( FALSE );
-    $vbox->pack_start($box2, FALSE, TRUE, 0);
+    my $box2 = Gtk3::Box->new( 'vertical', 10 );
+    $box2->set_homogeneous(FALSE);
+    $vbox->pack_start( $box2, FALSE, TRUE, 0 );
 
     my $button = Gtk3::Button->new_with_label('close');
-    $button->signal_connect(clicked => sub { $window->destroy });
-    $vbox->pack_start($button, FALSE, TRUE, 0);
+    $button->signal_connect( clicked => sub { $window->destroy } );
+    $vbox->pack_start( $button, FALSE, TRUE, 0 );
     $button->set_can_default(TRUE);
     $button->grab_default(TRUE);
 
@@ -91,7 +96,7 @@ sub activate_action {
 }
 
 sub activate_radio_action {
-    my ($action, $current) = @_;
+    my ( $action, $current ) = @_;
     warn "Radio action \"", $current->get_name, "\" selected\n";
 }
 
@@ -142,7 +147,7 @@ sub get_shape_entries {
         [ 'Square', undef, '_Square', '<control>S', 'Square', SHAPE_SQUARE ],
         [   'Rectangle', undef, '_Rectangle', '<control>R',
             'Rectangle', SHAPE_RECTANGLE
-        ],
+            ],
         [ 'Oval', undef, '_Oval', '<control>O', 'Egg', SHAPE_OVAL ],
         );
     return @shapes;
@@ -171,62 +176,56 @@ sub get_entries {
         [ 'PreferencesMenu', undef, '_Preferences' ],
         [ 'ColorMenu',       undef, '_Color' ],
         [ 'ShapeMenu',       undef, '_Shape' ],
-		[ 'VolumeMenu',       undef, '_Volume' ],
+        [ 'VolumeMenu',      undef, '_Volume' ],
         [ 'HelpMenu',        undef, '_Help' ],
-        [ 'New',               'gtk-new',
-          '_New',              '<control>N',
-          'Create a new file', \&activate_action
-        ],
-        [ 'Open',        'gtk-open',
-          '_Open',       '<control>O',
-          'Open a file', \&activate_action
-        ],
-        [ 'Save',              'gtk-save',
-          '_Save',             '<control>S',
-          'Save current file', \&activate_action
-        ],
-        [ 'SaveAs',         'gtk-save',
-          'Save _As...',    undef,
-          'Save to a file', \&activate_action
-        ],
-        [ 'Quit', 'gtk-quit', '_Quit', '<control>Q',
-          'Quit', \&activate_action
-        ],
-        [ 'About', undef, '_About', '<control>A', 'About',
-						\&activate_action
-        ],
-        [ 'Logo', 'demo-gtk-logo', undef, undef, 'GTK+',
-						\&activate_action
-		],
+        [   'New',               'gtk-new',
+            '_New',              '<control>N',
+            'Create a new file', \&activate_action
+            ],
+        [   'Open',        'gtk-open',
+            '_Open',       '<control>O',
+            'Open a file', \&activate_action
+            ],
+        [   'Save',              'gtk-save',
+            '_Save',             '<control>S',
+            'Save current file', \&activate_action
+            ],
+        [   'SaveAs',         'gtk-save',
+            'Save _As...',    undef,
+            'Save to a file', \&activate_action
+            ],
+        [   'Quit', 'gtk-quit', '_Quit', '<control>Q',
+            'Quit', \&activate_action
+            ],
+        [   'About', undef, '_About', '<control>A', 'About', \&activate_action
+            ],
+        [ 'Logo', 'demo-gtk-logo', undef, undef, 'GTK+', \&activate_action ],
         );
     return @entries;
 }
 
 sub get_volume_entries {
-  my @vol_entries = (
-    {
-		  name        => 'Low',
-		  label       => 'Low',
-		  tooltip     => 'Low volume',
-		  accelerator => '<control>L',
-		  value       => 0
-		},
-		{
-		  name        => 'Medium',
-		  label       => 'Medium',
-		  tooltip     => 'Medium volume',
-		  accelerator => '<control>M',
-		  value       => 1
-		},
-		{
-		  name        => 'High',
-		  label       => 'High',
-		  tooltip     => 'High volume',
-		  accelerator => '<control>H',
-		  value       => 2
-		},
-  );
-  return @vol_entries;
+    my @vol_entries = ( {
+            name        => 'Low',
+            label       => 'Low',
+            tooltip     => 'Low volume',
+            accelerator => '<control>L',
+            value       => 0
+            },
+        {   name        => 'Medium',
+            label       => 'Medium',
+            tooltip     => 'Medium volume',
+            accelerator => '<control>M',
+            value       => 1
+            },
+        {   name        => 'High',
+            label       => 'High',
+            tooltip     => 'High volume',
+            accelerator => '<control>H',
+            value       => 2
+            },
+        );
+    return @vol_entries;
 }
 
 1;

@@ -1,4 +1,19 @@
 #!/usr/bin/perl
+#
+# Size Groups
+#
+# GtkSizeGroup provides a mechanism for grouping a number of widgets
+# together so they all request the same amount of space. This is
+# typically useful when you want a column of widgets to have the same
+# size, but you can't use a GtkTable widget.
+#
+# Note that size groups only affect the amount of space requested,
+# not the size that the widgets finally receive. If you want the widgets
+# in a GtkSizeGroup to actually be the same size, you need to pack
+# them in such a way that they get the size they request and not more.
+# For example, if you are packing your widgets into a table,
+# you would not include the GTK_FILL flag.
+#
 
 package sizegroup;
 
@@ -25,17 +40,17 @@ sub do_sizegroup {
         $window->signal_connect( response => sub { $window->destroy; 1 } );
         $window->signal_connect( destroy => sub { $window = undef; 1 } );
 
-		my $icon = 'gtk-logo-rgb.gif';
-        if( -e $icon ) {
+        my $icon = 'gtk-logo-rgb.gif';
+        if ( -e $icon ) {
             my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-            my $transparent = $pixbuf->add_alpha (TRUE, 0xff, 0xff, 0xff);
-            $window->set_icon( $transparent );                                 
+            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+            $window->set_icon($transparent);
         }
 
         my $vbox = Gtk3::Box->new( 'vertical', 5 );
         $window->get_content_area()->add($vbox);
         $vbox->set_border_width(5);
-		$vbox->set_homogeneous( FALSE );
+        $vbox->set_homogeneous(FALSE);
 
         my $size_group = Gtk3::SizeGroup->new('horizontal');
 

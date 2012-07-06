@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+#
+# Assistant demo
+#
+# Demonstrates a sample multi-step assistant. Assistants
+# are used to divide an operation into several simpler sequential
+# steps, and to guide the user through these steps.
 
 use strict;
 use warnings;
@@ -11,7 +17,7 @@ use Glib 'TRUE', 'FALSE';
 my $assistant;    # Gtk3::Assistant
 my $pb;           # Gtk3::ProgressBar
 
-create_assistant();
+do_assistant();
 
 Gtk3->main();
 
@@ -66,7 +72,7 @@ sub on_entry_changed {
 sub create_page1 {
     my $box = Gtk3::Box->new( 'horizontal', 12 );
     $box->set_border_width(12);
-	$box->set_homogeneous( TRUE );
+    $box->set_homogeneous(TRUE);
 
     $box->pack_start(
         Gtk3::Label->new('You must fill out this entry to continue:'),
@@ -88,7 +94,7 @@ sub create_page1 {
 sub create_page2 {
     my $box = Gtk3::Box->new( 'vertical', 12 );
     $box->set_border_width(12);
-	$box->set_homogeneous( TRUE );
+    $box->set_homogeneous(TRUE);
 
     my $cb = Gtk3::CheckButton->new_with_label(
               'This is optional data, you may continue '
@@ -126,7 +132,7 @@ sub create_page4 {
     $assistant->set_page_complete( $pb, FALSE );
 }
 
-sub create_assistant {
+sub do_assistant {
     if ( !$assistant ) {
         $assistant = Gtk3::Assistant->new();
         $assistant->set_default_size( -1, 300 );
@@ -154,5 +160,8 @@ sub create_assistant {
     } else {
         $assistant->destroy();
     }
+
+    return $assistant;
 }
+
 1;

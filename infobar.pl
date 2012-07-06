@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+#
+# Info bar
+#
+# Info bar widgets are used to report important messages to the user.
+#
 
 package infobar;
 
@@ -22,16 +27,16 @@ sub do_infobar {
         $window->set_title('Info Bars');
         $window->signal_connect( destroy => sub { Gtk3->main_quit } );
 
-		my $icon = 'gtk-logo-rgb.gif';
-        if( -e $icon ) {
+        my $icon = 'gtk-logo-rgb.gif';
+        if ( -e $icon ) {
             my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-            my $transparent = $pixbuf->add_alpha (TRUE, 0xff, 0xff, 0xff);
-            $window->set_icon( $transparent );                                 
+            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+            $window->set_icon($transparent);
         }
 
         my $box = Gtk3::Box->new( 'vertical', 0 );
         $box->set_border_width(5);
-		$box->set_homogeneous( FALSE );
+        $box->set_homogeneous(FALSE);
         $window->add($box);
 
         my $bar = Gtk3::InfoBar->new();
@@ -81,7 +86,7 @@ sub do_infobar {
 
         my $vbox = Gtk3::Box->new( 'vertical', 8 );
         $vbox->set_border_width(8);
-		$vbox->set_homogeneous( FALSE );
+        $vbox->set_homogeneous(FALSE);
         $frame->add($vbox);
         $vbox->pack_start(
             Gtk3::Label->new('An example of different info bars'),
