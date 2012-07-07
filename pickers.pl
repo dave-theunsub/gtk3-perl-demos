@@ -1,4 +1,11 @@
 #!/usr/bin/perl
+#
+# Pickers
+# 
+# These widgets are mainly intended for use in preference dialogs.
+# They allow the selection of colors, fonts, files, directories,
+# and applications.
+# 
 
 package pickers;
 
