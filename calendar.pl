@@ -10,15 +10,12 @@ package calendar;
 use strict;
 use warnings;
 
-use lib '.';
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
 use constant DEF_PAD       => 10;
 use constant DEF_PAD_SMALL => 5;
 use constant TM_YEAR_BASE  => 1900;
-
-use constant GTK_RESPONSE_OK => -5;
 
 my $window;
 do_calendar();
