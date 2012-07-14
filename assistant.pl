@@ -5,6 +5,8 @@
 # Demonstrates a sample multi-step assistant. Assistants
 # are used to divide an operation into several simpler sequential
 # steps, and to guide the user through these steps.
+#
+# Perl version by Dave M <dave.nerd@gmail.com> 
 
 use strict;
 use warnings;
