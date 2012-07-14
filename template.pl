@@ -3,38 +3,27 @@
 # Description
 #
 
-package foo;
-
 use strict;
 use warnings;
 
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
-my $window;
-
 do_foo();
-
 Gtk3->main();
 
 sub do_foo {
-    if ( !$window ) {
-        # Our main window: it holds everything
-        $window = Gtk3::Window->new;
-        $window->set_title('template');
-        $window->signal_connect( destroy => sub { Gtk3->main_quit } );
+    my $window = Gtk3::Window->new;
+    $window->set_title('template');
+    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
 
-        # This VBox will be handy to organize objects
-        my $box = Gtk3::Box->new( 'vertical', 5 );
-        $window->add($box);
-    }
+    my $box = Gtk3::Box->new( 'vertical', 5 );
+    $window->add($box);
 
-    if ( !$window->get_visible ) {
-        # Tell everything to display
-        $window->show_all;
-    } else {
-        $window->destroy;
-    }
+    $window->show_all;
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
