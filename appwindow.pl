@@ -4,6 +4,7 @@
 #
 # Demonstrates a typical application window, with menubar, toolbar, statusbar.
 #
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
