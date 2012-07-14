@@ -5,8 +5,7 @@
 # simple GtkListStore and displays it. See the Stock Browser
 # demo for a more advanced example.
 #
-
-package liststore;
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
@@ -19,8 +18,8 @@ use constant COLUMN_NUMBER      => 1;
 use constant COLUMN_SEVERITY    => 2;
 use constant COLUMN_DESCRIPTION => 3;
 
-my @data = (
-    {   fixed       => FALSE,
+my @data = ( {
+        fixed       => FALSE,
         number      => 60482,
         severity    => "Normal",
         description => "scrollable notebooks and hidden tabs"
@@ -162,72 +161,66 @@ sub create_model {
     for my $item (@data) {
         my $iter = $lstore->append();
         $lstore->set(
-            $iter,
-			COLUMN_FIXED, $item->{fixed},
-			COLUMN_NUMBER, $item->{number},
-		 	COLUMN_SEVERITY, $item->{severity},
-		   	COLUMN_DESCRIPTION, $item->{description}
-		);
+            $iter,             COLUMN_FIXED,
+            $item->{fixed},    COLUMN_NUMBER,
+            $item->{number},   COLUMN_SEVERITY,
+            $item->{severity}, COLUMN_DESCRIPTION,
+            $item->{description} );
     }
     return $lstore;
 }
 
 sub do_liststore {
-    my $window;
+    my $window = Gtk3::Window->new;
+    $window->set_title('ListStore demo');
+    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
+    $window->set_border_width(8);
+    $window->set_default_size( 300, 250 );
 
-    if ( !$window ) {
-        $window = Gtk3::Window->new;
-        $window->set_title('ListStore demo');
-        $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-        $window->set_border_width(8);
-        $window->set_default_size( 300, 250 );
-
-        my $icon = 'gtk-logo-rgb.gif';
-        if ( -e $icon ) {
-            my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-            $window->set_icon($transparent);
-        }
-
-        # This VBox will be handy to organize objects
-        my $box = Gtk3::Box->new( 'vertical', 8 );
-        $box->set_homogeneous(FALSE);
-        $window->add($box);
-
-        $box->pack_start(
-            Gtk3::Label->new(
-                      'This is the bug list (note: not based on real data, '
-                    . 'it would be nice to have a nice ODBC interface to '
-                    . 'bugzilla or so, though).'
-                    ),
-            FALSE, FALSE, 0
-            );
-
-        my $sw = Gtk3::ScrolledWindow->new( undef, undef );
-        $sw->set_shadow_type('etched-in');
-        $sw->set_policy( 'never', 'automatic' );
-        $box->pack_start( $sw, TRUE, TRUE, 5 );
-
-        # Create TreeModel
-        my $model = create_model();
-
-        # Create a TreeView
-        my $treeview = Gtk3::TreeView->new($model);
-        $treeview->set_rules_hint(TRUE);
-        $treeview->set_search_column(COLUMN_DESCRIPTION);
-        $sw->add($treeview);
-
-        # Add columns to TreeView
-        add_columns($treeview);
-        $window->show_all();
-        Gtk3->main();
+    my $icon = 'gtk-logo-rgb.gif';
+    if ( -e $icon ) {
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+        $window->set_icon($transparent);
     }
 
-    if ( !$window->get_visible ) {
-        $window->show_all;
-    } else {
-        $window->destroy();
-    }
+    # This VBox will be handy to organize objects
+    my $box = Gtk3::Box->new( 'vertical', 8 );
+    $box->set_homogeneous(FALSE);
+    $window->add($box);
+
+    $box->pack_start(
+        Gtk3::Label->new(
+                  'This is the bug list (note: not based on real data, '
+                . 'it would be nice to have a nice ODBC interface to '
+                . 'bugzilla or so, though).'
+                ),
+        FALSE, FALSE, 0
+        );
+
+    my $sw = Gtk3::ScrolledWindow->new( undef, undef );
+    $sw->set_shadow_type('etched-in');
+    $sw->set_policy( 'never', 'automatic' );
+    $box->pack_start( $sw, TRUE, TRUE, 5 );
+
+    # Create TreeModel
+    my $model = create_model();
+
+    # Create a TreeView
+    my $treeview = Gtk3::TreeView->new($model);
+    $treeview->set_rules_hint(TRUE);
+    $treeview->set_search_column(COLUMN_DESCRIPTION);
+    $sw->add($treeview);
+
+    # Add columns to TreeView
+    add_columns($treeview);
+    $window->show_all();
+    Gtk3->main();
+
+    $window->show_all;
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
