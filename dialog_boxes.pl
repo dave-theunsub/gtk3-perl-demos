@@ -4,6 +4,7 @@
 #
 # Dialog widgets are used to pop up a transient window for user feedback.
 #
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
