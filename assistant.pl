@@ -9,8 +9,6 @@
 use strict;
 use warnings;
 
-package assistant;
-
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
@@ -18,7 +16,6 @@ my $assistant;    # Gtk3::Assistant
 my $pb;           # Gtk3::ProgressBar
 
 do_assistant();
-
 Gtk3->main();
 
 sub apply_changes_gradually {
@@ -133,35 +130,37 @@ sub create_page4 {
 }
 
 sub do_assistant {
-    if ( !$assistant ) {
-        $assistant = Gtk3::Assistant->new();
-        $assistant->set_default_size( -1, 300 );
+    $assistant = Gtk3::Assistant->new();
+    $assistant->set_default_size( -1, 300 );
 
-        create_page1();
-        create_page2();
-        create_page3();
-        create_page4();
-
-        $assistant->signal_connect(
-            destroy => sub {
-                # If this is part of a package (gtk3-demo), then
-                # $assistant->destroy();
-                # otherwise:
-                Gtk3->main_quit;
-            } );
-        $assistant->signal_connect( cancel  => \&on_assistant_close_cancel );
-        $assistant->signal_connect( close   => \&on_assistant_close_cancel );
-        $assistant->signal_connect( apply   => \&on_assistant_apply );
-        $assistant->signal_connect( prepare => \&on_assistant_prepare );
+    my $icon = 'gtk-logo-rgb.gif';
+    if ( -e $icon ) {
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+        $assistant->set_icon($transparent);
     }
 
-    if ( !$assistant->get_visible ) {
-        $assistant->show_all();
-    } else {
-        $assistant->destroy();
-    }
+    create_page1();
+    create_page2();
+    create_page3();
+    create_page4();
 
-    return $assistant;
+    $assistant->signal_connect(
+        destroy => sub {
+            # If this is part of a package (gtk3-demo), then
+            # $assistant->destroy();
+            # otherwise:
+            Gtk3->main_quit;
+        } );
+    $assistant->signal_connect( cancel  => \&on_assistant_close_cancel );
+    $assistant->signal_connect( close   => \&on_assistant_close_cancel );
+    $assistant->signal_connect( apply   => \&on_assistant_apply );
+    $assistant->signal_connect( prepare => \&on_assistant_prepare );
+
+    $assistant->show_all();
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
