@@ -3,7 +3,10 @@
 # Transparency demo
 #
 # This is a minimalist version of the C demo.
+# It's minimalist because not all Cairo stuff works yet.
+# It still gives a decent look at transparency, though.
 #
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
@@ -178,3 +181,8 @@ sub do_transparent {
 
     $window->show_all;
 }
+
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
