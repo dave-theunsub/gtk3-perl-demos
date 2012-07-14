@@ -3,6 +3,8 @@
 # Button Boxes
 #
 # The Button Box widgets are used to arrange buttons with padding.
+#
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
