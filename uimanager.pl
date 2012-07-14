@@ -5,8 +5,9 @@
 # The GtkUIManager object allows the easy creation of menus from
 # an array of actions and a description of the menu hierarchy.
 #
-
-package uimanager;
+# This demo requires per-Gtk3 >= 0.07.
+#
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
@@ -27,6 +28,7 @@ use constant SOUND_MEDIUM => 1;
 use constant SOUND_HIGH   => 2;
 
 do_ui_manager();
+Gtk3->main();
 
 sub do_ui_manager {
     my $window = Gtk3::Window->new('toplevel');
@@ -87,7 +89,6 @@ sub do_ui_manager {
     $button->grab_default(TRUE);
 
     $window->show_all();
-    Gtk3->main();
 }
 
 sub activate_action {
@@ -228,4 +229,7 @@ sub get_volume_entries {
     return @vol_entries;
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
