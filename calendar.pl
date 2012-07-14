@@ -4,6 +4,7 @@
 #
 # This is an example of a GtkCalendar.
 #
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
