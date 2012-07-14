@@ -4,7 +4,9 @@
 #
 # GtkEntry allows to display icons and progress information.
 # This demo shows how to use these features in a search entry.
+# This version requires perl-Gtk3 >= 0.07.
 #
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
@@ -14,7 +16,6 @@ use constant GTK_RESPONSE_NONE => -1;
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
-my $window;
 my $nb;
 my $entry;
 my $search_progress_id;
@@ -22,84 +23,74 @@ my $finish_search_id;
 my $menu;
 
 do_search_entry();
-
 Gtk3->main();
 
 sub do_search_entry {
-    if ( !$window ) {
-        $window = Gtk3::Dialog->new;
-        $window->set_title('Search Entry');
-        $window->add_button( 'gtk-close' => GTK_RESPONSE_NONE );
-        $window->set_resizable(FALSE);
-        $window->signal_connect( destroy  => sub { Gtk3->main_quit } );
-        $window->signal_connect( response => sub { $window->destroy } );
+    my $window = Gtk3::Dialog->new;
+    $window->set_title('Search Entry');
+    $window->add_button( 'gtk-close' => GTK_RESPONSE_NONE );
+    $window->set_resizable(FALSE);
+    $window->signal_connect( destroy  => sub { Gtk3->main_quit } );
+    $window->signal_connect( response => sub { $window->destroy } );
 
-        my $vbox = Gtk3::Box->new( 'vertical', 5 );
-        $vbox->set_border_width(5);
-        $window->get_content_area()->add($vbox);
+    my $vbox = Gtk3::Box->new( 'vertical', 5 );
+    $vbox->set_border_width(5);
+    $window->get_content_area()->add($vbox);
 
-        my $label = Gtk3::Label->new('');
-        $label->set_use_markup('Search entry demo');
-        $vbox->pack_start( $label, FALSE, FALSE, 0 );
+    my $label = Gtk3::Label->new('');
+    $label->set_use_markup('Search entry demo');
+    $vbox->pack_start( $label, FALSE, FALSE, 0 );
 
-        my $hbox = Gtk3::Box->new( 'horizontal', 10 );
-        $vbox->pack_start( $hbox, TRUE, TRUE, 0 );
-        $hbox->set_border_width(0);
+    my $hbox = Gtk3::Box->new( 'horizontal', 10 );
+    $vbox->pack_start( $hbox, TRUE, TRUE, 0 );
+    $hbox->set_border_width(0);
 
-        # Create our entry
-        $entry = Gtk3::Entry->new();
-        $hbox->pack_start( $entry, FALSE, FALSE, 0 );
+    # Create our entry
+    $entry = Gtk3::Entry->new();
+    $hbox->pack_start( $entry, FALSE, FALSE, 0 );
 
-        # Create the find and cancel buttons
-        $nb = Gtk3::Notebook->new();
-        $nb->set_show_tabs(FALSE);
-        $nb->set_show_border(FALSE);
-        $hbox->pack_start( $nb, FALSE, FALSE, 0 );
+    # Create the find and cancel buttons
+    $nb = Gtk3::Notebook->new();
+    $nb->set_show_tabs(FALSE);
+    $nb->set_show_border(FALSE);
+    $hbox->pack_start( $nb, FALSE, FALSE, 0 );
 
-        my $find_btn = Gtk3::Button->new_with_label('Find');
-        $find_btn->signal_connect( clicked => \&start_search, $entry );
-        $nb->append_page($find_btn);
-        $find_btn->show();
+    my $find_btn = Gtk3::Button->new_with_label('Find');
+    $find_btn->signal_connect( clicked => \&start_search, $entry );
+    $nb->append_page($find_btn);
+    $find_btn->show();
 
-        my $cancel_btn = Gtk3::Button->new_with_label('Cancel');
-        $cancel_btn->signal_connect( clicked => \&stop_search );
-        $nb->append_page($cancel_btn);
-        $cancel_btn->show();
+    my $cancel_btn = Gtk3::Button->new_with_label('Cancel');
+    $cancel_btn->signal_connect( clicked => \&stop_search );
+    $nb->append_page($cancel_btn);
+    $cancel_btn->show();
 
-        # Set up the search icon
-        search_by_name( undef, $entry );
+    # Set up the search icon
+    search_by_name( undef, $entry );
 
-        # Set up the clear icon
-        $entry->set_icon_from_stock( 'secondary', 'gtk-clear' );
+    # Set up the clear icon
+    $entry->set_icon_from_stock( 'secondary', 'gtk-clear' );
 
-        #$entry->signal_connect( text_changed_cb =>
-        $entry->signal_connect( 'icon-press' => \&icon_press_cb );
-        $entry->signal_connect(
-            'notify::text' => \&text_changed_cb,
-            $find_btn
-            );
-        $entry->signal_connect( activate => \&activate_cb );
+    #$entry->signal_connect( text_changed_cb =>
+    $entry->signal_connect( 'icon-press' => \&icon_press_cb );
+    $entry->signal_connect(
+        'notify::text' => \&text_changed_cb,
+        $find_btn
+        );
+    $entry->signal_connect( activate => \&activate_cb );
 
-        # Create the menu
-        $menu = create_search_menu($entry);
-        $menu->attach_to_widget($entry);
+    # Create the menu
+    $menu = create_search_menu($entry);
+    $menu->attach_to_widget($entry);
 
-        # Add accessible alternatives for icon functionality
-        $entry->signal_connect( 'populate-popup' => \&entry_populate_popup );
+    # Add accessible alternatives for icon functionality
+    $entry->signal_connect( 'populate-popup' => \&entry_populate_popup );
 
-        # Give the focus to the close_button
-        my $close_btn = $window->get_widget_for_response(GTK_RESPONSE_NONE);
-        $close_btn->grab_focus;
+    # Give the focus to the close_button
+    my $close_btn = $window->get_widget_for_response(GTK_RESPONSE_NONE);
+    $close_btn->grab_focus;
 
-    }
-
-    if ( !$window->get_visible() ) {
-        $window->show_all;
-    } else {
-        $window->destroy();
-    }
-
-    return $window;
+    $window->show_all;
 }
 
 sub show_find_button {
@@ -225,4 +216,7 @@ sub icon_press_cb {
     }
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
