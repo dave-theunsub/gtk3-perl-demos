@@ -25,6 +25,8 @@ my $_PANGO_BASENAME = 'Pango';
 my $_PANGO_VERSION = '1.0';
 my $_PANGO_PACKAGE = 'Pango';
 
+# - gtk customization ------------------------------------------------------- #
+
 my %_GTK_NAME_CORRECTIONS = (
   'Gtk3::stock_add' => 'Gtk3::Stock::add',
   'Gtk3::stock_add_static' => 'Gtk3::Stock::add_static',
@@ -53,9 +55,90 @@ my @_GTK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
   Gtk3::TreeSelection::get_selected
 /;
 
+# - gdk customization ------------------------------------------------------- #
+
+my @_GDK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
+  Gtk3::Gdk::Event::get_axis
+  Gtk3::Gdk::Event::get_button
+  Gtk3::Gdk::Event::get_click_count
+  Gtk3::Gdk::Event::get_coords
+  Gtk3::Gdk::Event::get_keycode
+  Gtk3::Gdk::Event::get_keyval
+  Gtk3::Gdk::Event::get_scroll_direction
+  Gtk3::Gdk::Event::get_scroll_deltas
+  Gtk3::Gdk::Event::get_state
+  Gtk3::Gdk::Event::get_root_coords
+/;
+my %_GDK_REBLESSERS = (
+  'Gtk3::Gdk::Event' => \&Gtk3::Gdk::Event::_rebless,
+);
+
+my %_GDK_TYPE_TO_PACKAGE = (
+  'expose' => 'Expose',
+  'motion-notify' => 'Motion',
+  'button-press' => 'Button',
+  'button-2press' => 'Button',
+  'button-3press' => 'Button',
+  'button-release' => 'Button',
+  'key-press' => 'Key',
+  'key-release' => 'Key',
+  'enter-notify' => 'Crossing',
+  'leave-notify' => 'Crossing',
+  'focus-change' => 'Focus',
+  'configure' => 'Configure',
+  'property-notify' => 'Property',
+  'selection-clear' => 'Selection',
+  'selection-request' => 'Selection',
+  'selection-notify' => 'Selection',
+  'proximity-in' => 'Proximity',
+  'proximity-out' => 'Proximity',
+  'drag-enter' => 'DND',
+  'drag-leave' => 'DND',
+  'drag-motion' => 'DND',
+  'drag-status' => 'DND',
+  'drop-start' => 'DND',
+  'drop-finished' => 'DND',
+  'client-event' => 'Client',
+  'visibility-notify' => 'Visibility',
+  'no-expose' => 'NoExpose',
+  'scroll' => 'Scroll',
+  'window-state' => 'WindowState',
+  'setting' => 'Setting',
+  'owner-change' => 'OwnerChange',
+  'grab-broken' => 'GrabBroken',
+  'damage' => 'Expose',
+  # added in 3.4:
+  'touch-begin' => 'Touch',
+  'touch-update' => 'Touch',
+  'touch-end' => 'Touch',
+  'touch-cancel' => 'Touch',
+);
+
+# Make all of the above sub-types inherit from Gtk3::Gdk::Event.
+{
+  no strict qw(refs);
+  my %seen;
+  foreach (grep { !$seen{$_}++ } values %_GDK_TYPE_TO_PACKAGE) {
+    push @{'Gtk3::Gdk::Event' . $_ . '::ISA'}, 'Gtk3::Gdk::Event';
+  }
+}
+
+sub Gtk3::Gdk::Event::_rebless {
+  my ($event) = @_;
+  my $package = 'Gtk3::Gdk::Event';
+  if (exists $_GDK_TYPE_TO_PACKAGE{$event->type}) {
+    $package .= $_GDK_TYPE_TO_PACKAGE{$event->type};
+  }
+  return bless $event, $package;
+}
+
+# - gdk-pixbuf customization ------------------------------------------------ #
+
 my @_GDK_PIXBUF_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
   Gtk3::Gdk::Pixbuf::get_formats
 /;
+
+# - Wiring ------------------------------------------------------------------ #
 
 sub import {
   my $class = shift;
@@ -71,7 +154,9 @@ sub import {
   Glib::Object::Introspection->setup (
     basename => $_GDK_BASENAME,
     version => $_GDK_VERSION,
-    package => $_GDK_PACKAGE);
+    package => $_GDK_PACKAGE,
+    handle_sentinel_boolean_for => \@_GDK_HANDLE_SENTINEL_BOOLEAN_FOR,
+    reblessers => \%_GDK_REBLESSERS);
 
   Glib::Object::Introspection->setup (
     basename => $_GDK_PIXBUF_BASENAME,
@@ -553,6 +638,26 @@ sub Gtk3::MessageDialog::new {
   return $dialog;
 }
 
+# Gtk3::RadioMenuItem constructors.
+{
+  no strict qw(refs);
+  foreach my $ctor (qw/new new_with_label new_with_mnemonic/) {
+    *{'Gtk3::RadioMenuItem::' . $ctor} = sub {
+      my ($class, $group_or_member, @rest) = @_;
+      my $real_ctor = $ctor;
+      {
+        local $@;
+        if (eval { $group_or_member->isa ('Gtk3::RadioMenuItem') }) {
+          $real_ctor .= '_from_widget';
+        }
+      }
+      return Glib::Object::Introspection->invoke (
+        $_GTK_BASENAME, 'RadioMenuItem', $real_ctor,
+        $class, $group_or_member, @rest);
+    }
+  }
+}
+
 sub Gtk3::TreeModel::get {
   my ($model, $iter, @columns) = @_;
   my @values = map { $model->get_value ($iter, $_) } @columns;
@@ -648,11 +753,6 @@ sub Gtk3::Window::new {
 }
 
 # Gdk
-sub Gtk3::Gdk::Event::time {
-  my $event = shift;
-  return Glib::Object::Introspection->invoke (
-    $_GDK_BASENAME, 'Event', 'get_time', $event );
-}
 
 sub Gtk3::Gdk::Window::new {
   my ($class, $parent, $attr, $attr_mask) = @_;
