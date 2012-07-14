@@ -11,8 +11,7 @@
 # (VPaned) widget, and allows you to adjust the options for each
 # side of each widget.
 #
-
-package panes;
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
@@ -20,75 +19,67 @@ use warnings;
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
-my $window;
-
 do_panes();
 Gtk3->main();
 
 sub do_panes {
-    if ( !$window ) {
-        $window = Gtk3::Window->new('toplevel');
-        $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-        $window->set_title('Panes');
-        $window->set_border_width(0);
+    my $window = Gtk3::Window->new('toplevel');
+    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
+    $window->set_title('Panes');
+    $window->set_border_width(0);
 
-        my $icon = 'gtk-logo-rgb.gif';
-        if ( -e $icon ) {
-            my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
-            my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-            $window->set_icon($transparent);
-        }
-
-        # VBox is deprecated
-        my $vbox = Gtk3::Box->new( 'vertical', 0 );
-        $window->add($vbox);
-
-        # VPaned is deprecated
-        my $vpaned = Gtk3::Paned->new('vertical');
-        $vbox->pack_start( $vpaned, TRUE, TRUE, 0 );
-        $vpaned->set_border_width(5);
-
-        # HPaned is deprecated
-        my $hpaned = Gtk3::Paned->new('horizontal');
-        $vpaned->add1($hpaned);
-
-        my $frame = Gtk3::Frame->new('');
-        $frame->set_shadow_type('in');
-        $frame->set_size_request( 60, 60 );
-        $hpaned->add1($frame);
-
-        my $button = Gtk3::Button->new_with_mnemonic('_Hi there');
-        $frame->add($button);
-
-        $frame = Gtk3::Frame->new('');
-        $frame->set_shadow_type('in');
-        $frame->set_size_request( 80, 60 );
-        #$frame->add( Gtk3::Button->new() );
-        $hpaned->add2($frame);
-
-        $frame = Gtk3::Frame->new('');
-        $frame->set_shadow_type('in');
-        $frame->set_size_request( 60, 80 );
-        #$frame->add( Gtk3::Button->new() );
-        $vpaned->add2($frame);
-
-        # Now create toggle buttons to control sizing
-        $vbox->pack_start(
-            create_pane_options( $hpaned, 'Horizontal', 'Left', 'Right' ),
-            FALSE, FALSE, 0 );
-
-        $vbox->pack_start(
-            create_pane_options( $vpaned, 'Vertical', 'Top', 'Bottom' ),
-            FALSE, FALSE, 0 );
-
-        $vbox->show_all();
+    my $icon = 'gtk-logo-rgb.gif';
+    if ( -e $icon ) {
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+        $window->set_icon($transparent);
     }
 
-    if ( !$window->get_visible() ) {
-        $window->show_all();
-    } else {
-        $window->destroy();
-    }
+    # VBox is deprecated
+    my $vbox = Gtk3::Box->new( 'vertical', 0 );
+    $window->add($vbox);
+
+    # VPaned is deprecated
+    my $vpaned = Gtk3::Paned->new('vertical');
+    $vbox->pack_start( $vpaned, TRUE, TRUE, 0 );
+    $vpaned->set_border_width(5);
+
+    # HPaned is deprecated
+    my $hpaned = Gtk3::Paned->new('horizontal');
+    $vpaned->add1($hpaned);
+
+    my $frame = Gtk3::Frame->new('');
+    $frame->set_shadow_type('in');
+    $frame->set_size_request( 60, 60 );
+    $hpaned->add1($frame);
+
+    my $button = Gtk3::Button->new_with_mnemonic('_Hi there');
+    $frame->add($button);
+
+    $frame = Gtk3::Frame->new('');
+    $frame->set_shadow_type('in');
+    $frame->set_size_request( 80, 60 );
+    #$frame->add( Gtk3::Button->new() );
+    $hpaned->add2($frame);
+
+    $frame = Gtk3::Frame->new('');
+    $frame->set_shadow_type('in');
+    $frame->set_size_request( 60, 80 );
+    #$frame->add( Gtk3::Button->new() );
+    $vpaned->add2($frame);
+
+    # Now create toggle buttons to control sizing
+    $vbox->pack_start(
+        create_pane_options( $hpaned, 'Horizontal', 'Left', 'Right' ),
+        FALSE, FALSE, 0 );
+
+    $vbox->pack_start(
+        create_pane_options( $vpaned, 'Vertical', 'Top', 'Bottom' ),
+        FALSE, FALSE, 0 );
+
+    $vbox->show_all();
+
+    $window->show_all();
 }
 
 sub create_pane_options {
@@ -169,4 +160,7 @@ sub toggle_resize {
     }
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
