@@ -7,6 +7,10 @@
 # in Windows.
 #
 # This is a mix of the Python example and one Zentara wrote for Gtk2.
+#
+# This demo requires perl-Gtk3 >= 0.06 or 0.07 - can't remember.
+#
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
@@ -35,7 +39,11 @@ sub do_status_icon_demo {
             $menu->popup( undef, undef, \&Gtk3::StatusIcon::position_menu,
                 $show, $button, $event_time );
         } );
-    Gtk3->main();
+
+	Gtk3->main();
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
