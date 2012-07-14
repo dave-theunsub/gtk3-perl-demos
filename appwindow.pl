@@ -5,8 +5,6 @@
 # Demonstrates a typical application window, with menubar, toolbar, statusbar.
 #
 
-package appwindow;
-
 use strict;
 use warnings;
 
@@ -281,7 +279,6 @@ sub mark_set_callback {
 }
 
 sub do_appwindow {
-    if ( !$window ) {
         register_stock_icons();
 
         $window = Gtk3::Window->new('toplevel');
@@ -363,15 +360,8 @@ sub do_appwindow {
             );
 
         update_statusbar( $buffer, $statusbar );
-    }
 
-    if ( !$window->get_visible ) {
         $window->show_all;
-    } else {
-        $window->destroy;
-    }
-
-    return $window;
 }
 
 sub demo_find_file {
@@ -388,4 +378,7 @@ sub demo_find_file {
     return $filename;
 }
 
-1;
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
