@@ -4,6 +4,7 @@
 #
 # GtkEntryBuffer provides the text content in a GtkEntry.
 #
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
