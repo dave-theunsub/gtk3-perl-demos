@@ -6,7 +6,7 @@
 # are used to divide an operation into several simpler sequential
 # steps, and to guide the user through these steps.
 #
-# Perl version by Dave M <dave.nerd@gmail.com> 
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
@@ -137,7 +137,7 @@ sub do_assistant {
 
     my $icon = 'gtk-logo-rgb.gif';
     if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
         my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
         $assistant->set_icon($transparent);
     }
