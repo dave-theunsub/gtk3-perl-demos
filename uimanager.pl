@@ -38,7 +38,7 @@ sub do_ui_manager {
 
     my $icon = 'gtk-logo-rgb.gif';
     if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
         my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
         $window->set_icon($transparent);
     }
@@ -198,7 +198,8 @@ sub get_entries {
         [   'Quit', 'gtk-quit', '_Quit', '<control>Q',
             'Quit', \&activate_action
             ],
-        [   'About', undef, '_About', '<control>A', 'About', \&activate_action
+        [   'About', undef, '_About', '<control>A', 'About',
+            \&activate_action
             ],
         [ 'Logo', 'demo-gtk-logo', undef, undef, 'GTK+', \&activate_action ],
         );

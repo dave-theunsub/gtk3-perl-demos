@@ -33,6 +33,13 @@ sub do_search_entry {
     $window->signal_connect( destroy  => sub { Gtk3->main_quit } );
     $window->signal_connect( response => sub { $window->destroy } );
 
+    my $icon = 'gtk-logo-rgb.gif';
+    if ( -e $icon ) {
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
+        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+        $window->set_icon($transparent);
+    }
+
     my $vbox = Gtk3::Box->new( 'vertical', 5 );
     $vbox->set_border_width(5);
     $window->get_content_area()->add($vbox);
