@@ -22,7 +22,7 @@ sub do_button_box {
     $window->signal_connect( destroy => sub { Gtk3->main_quit } );
     my $icon = 'gtk-logo-rgb.gif';
     if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file('gtk-logo-rgb.gif');
+        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
         my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
         $window->set_icon($transparent);
     }
