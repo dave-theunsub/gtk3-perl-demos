@@ -3,7 +3,7 @@
 #
 # GtkCellRendererSpinner — Renders a spinning animation in a cell
 #
-# # Perl version by Dave M <dave.nerd@gmail.com>
+# Perl version by Dave M <dave.nerd@gmail.com>
 
 use strict;
 use warnings;
