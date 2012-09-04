@@ -40,6 +40,8 @@ my @_GTK_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
   Gtk3::CellLayout::get_cells
   Gtk3::Stock::list_ids
   Gtk3::TreePath::get_indices
+  Gtk3::UIManager::get_action_groups
+  Gtk3::UIManager::get_toplevels
   Gtk3::Window::list_toplevels
 /;
 my @_GTK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
@@ -168,6 +170,9 @@ sub import {
     basename => $_PANGO_BASENAME,
     version => $_PANGO_VERSION,
     package => $_PANGO_PACKAGE);
+
+  Glib::Object::Introspection->_register_boxed_synonym (
+    "cairo", "RectangleInt", "gdk_rectangle_get_type");
 
   my $init = 0;
   my @unknown_args = ($class);
@@ -551,6 +556,13 @@ sub Gtk3::CheckMenuItem::new {
     $_GTK_BASENAME, 'CheckMenuItem', 'new', @_);
 }
 
+sub Gtk3::CssProvider::load_from_data {
+  my ($self, $data) = @_;
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'CssProvider', 'load_from_data',
+    $self, _unpack_unless_array_ref ($data));
+}
+
 sub Gtk3::HBox::new {
   my ($class, $homogeneous, $spacing) = @_;
   $homogeneous = 5 unless defined $homogeneous;
@@ -737,6 +749,13 @@ sub Gtk3::TreeViewColumn::new_with_attributes {
   return $object;
 }
 
+sub Gtk3::UIManager::add_ui_from_string {
+  my ($manager, $string) = @_;
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'UIManager', 'add_ui_from_string',
+    $manager, $string, length $string);
+}
+
 sub Gtk3::VBox::new {
   my ($class, $homogeneous, $spacing) = @_;
   $homogeneous = 5 unless defined $homogeneous;
@@ -784,13 +803,7 @@ sub Gtk3::Gdk::Pixbuf::new_from_data {
   my ($class, $data, $colorspace, $has_alpha, $bits_per_sample, $width, $height, $rowstride) = @_;
   # FIXME: do we need to keep $real_data alive and then release it in a destroy
   # notify callback?
-  my $real_data;
-  {
-    local $@;
-    $real_data = (eval { @{$data} })
-               ? $data
-               : [unpack 'C*', $data];
-  }
+  my $real_data = _unpack_unless_array_ref ($data);
   return Glib::Object::Introspection->invoke (
     $_GDK_PIXBUF_BASENAME, 'Pixbuf', 'new_from_data',
     $class, $real_data, $colorspace, $has_alpha, $bits_per_sample, $width, $height, $rowstride,
@@ -800,16 +813,9 @@ sub Gtk3::Gdk::Pixbuf::new_from_data {
 sub Gtk3::Gdk::Pixbuf::new_from_inline {
   my ($class, $data, $copy_pixels) = @_;
   $copy_pixels = Glib::TRUE unless defined $copy_pixels;
-  my $real_data;
-  {
-    local $@;
-    $real_data = (eval { @{$data} })
-               ? $data
-               : [unpack 'C*', $data];
-  }
   return Glib::Object::Introspection->invoke (
     $_GDK_PIXBUF_BASENAME, 'Pixbuf', 'new_from_inline',
-    $class, $real_data, $copy_pixels);
+    $class, _unpack_unless_array_ref ($data), $copy_pixels);
 }
 
 sub Gtk3::Gdk::Pixbuf::new_from_xpm_data {
@@ -921,6 +927,14 @@ sub _unpack_columns_and_values {
   return (\@columns, \@values);
 }
 
+sub _unpack_unless_array_ref {
+  my ($data) = @_;
+  local $@;
+  return defined eval { @{$data} }
+    ? $data
+    : [unpack 'C*', $data];
+}
+
 sub _rest_to_ref {
   my ($rest) = @_;
   local $@;
@@ -995,6 +1009,10 @@ Gtk2::Gdk::Keysyms{XYZ} >>, use C<< Gtk3::Gdk::KEY_XYZ >>.
 =item * The Gtk2::Pango compatibility wrapper was not carried over; simply use
 the namespace "Pango" everywhere.  It gets set up automatically when loading
 L<Gtk3>.
+
+=item * The types Gtk2::Allocation and Gtk2::Gdk::Rectangle are now aliases for
+Cairo::RectangleInt, and as such they are represented as plain hashes with
+keys 'width', 'height', 'x' and 'y'.
 
 =item * The Gtk3::Menu menu position callback passed to popup() does not
 receive x and y parameters anymore.
