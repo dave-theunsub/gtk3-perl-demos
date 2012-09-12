@@ -15,43 +15,40 @@ use Glib 'TRUE', 'FALSE';
 
 my $dialog;
 
-do_links();
-Gtk3->main();
+my $window = Gtk3::Window->new('toplevel');
+$window->set_title('Links');
+$window->set_border_width(12);
+$window->signal_connect( destroy => sub { Gtk3->main_quit } );
 
-sub do_links {
-    my $window = Gtk3::Window->new('toplevel');
-    $window->set_title('Links');
-    $window->set_border_width(12);
-    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-
-    my $icon = 'gtk-logo-rgb.gif';
-    if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
-        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-        $window->set_icon($transparent);
-    }
-
-    my $label =
-        Gtk3::Label->new( 'Some <a href="http://en.wikipedia.org/wiki/Text"'
-            . "title=\"plain text\">text</a> may be marked up\n"
-            . "as hyperlinks, which can be clicked\n"
-            . "or activated via <a href=\"keynav\">keynav</a>\n"
-            . "and they work fine with other markup, like when\n"
-            . "searching on <a href=\"http://www.google.com/\">"
-            . "<span color=\"#0266C8\">G</span><span color=\"#F90101\">o</span>"
-            . "<span color=\"#F2B50F\">o</span><span color=\"#0266C8\">g</span>"
-            . "<span color=\"#00933B\">l</span><span color=\"#F90101\">e</span>"
-            . "</a>." );
-    $label->set_use_markup(TRUE);
-    $label->signal_connect(
-        'activate-link' => \&activate_link,
-        $window
-        );
-    $window->add($label);
-    $label->show();
-
-    $window->show_all();
+my $icon = 'gtk-logo-rgb.gif';
+if ( -e $icon ) {
+    my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
+    my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+    $window->set_icon($transparent);
 }
+
+my $label =
+    Gtk3::Label->new( 'Some <a href="http://en.wikipedia.org/wiki/Text"'
+        . "title=\"plain text\">text</a> may be marked up\n"
+        . "as hyperlinks, which can be clicked\n"
+        . "or activated via <a href=\"keynav\">keynav</a>\n"
+        . "and they work fine with other markup, like when\n"
+        . "searching on <a href=\"http://www.google.com/\">"
+        . "<span color=\"#0266C8\">G</span><span color=\"#F90101\">o</span>"
+        . "<span color=\"#F2B50F\">o</span><span color=\"#0266C8\">g</span>"
+        . "<span color=\"#00933B\">l</span><span color=\"#F90101\">e</span>"
+        . "</a>." );
+$label->set_use_markup(TRUE);
+$label->signal_connect(
+    'activate-link' => \&activate_link,
+    $window
+    );
+$window->add($label);
+$label->show();
+
+$window->show_all();
+
+Gtk3->main();
 
 sub activate_link {
     my ( $label, $uri, $data, $window ) = @_;
