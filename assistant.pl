@@ -14,10 +14,37 @@ use warnings;
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
-my $assistant;    # Gtk3::Assistant
-my $pb;           # Gtk3::ProgressBar
+my $pb;    # Gtk3::ProgressBar
 
-do_assistant();
+my $assistant = Gtk3::Assistant->new();
+$assistant->set_default_size( -1, 300 );
+
+my $icon = 'gtk-logo-rgb.gif';
+if ( -e $icon ) {
+    my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
+    my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+    $assistant->set_icon($transparent);
+}
+
+create_page1();
+create_page2();
+create_page3();
+create_page4();
+
+$assistant->signal_connect(
+    destroy => sub {
+        # If this is part of a package (gtk3-demo), then
+        # $assistant->destroy();
+        # otherwise:
+        Gtk3->main_quit;
+    } );
+$assistant->signal_connect( cancel  => \&on_assistant_close_cancel );
+$assistant->signal_connect( close   => \&on_assistant_close_cancel );
+$assistant->signal_connect( apply   => \&on_assistant_apply );
+$assistant->signal_connect( prepare => \&on_assistant_prepare );
+
+$assistant->show_all();
+
 Gtk3->main();
 
 sub apply_changes_gradually {
@@ -129,37 +156,6 @@ sub create_page4 {
     $assistant->set_page_title( $pb, 'Applying changes...' );
 
     $assistant->set_page_complete( $pb, FALSE );
-}
-
-sub do_assistant {
-    $assistant = Gtk3::Assistant->new();
-    $assistant->set_default_size( -1, 300 );
-
-    my $icon = 'gtk-logo-rgb.gif';
-    if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
-        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-        $assistant->set_icon($transparent);
-    }
-
-    create_page1();
-    create_page2();
-    create_page3();
-    create_page4();
-
-    $assistant->signal_connect(
-        destroy => sub {
-            # If this is part of a package (gtk3-demo), then
-            # $assistant->destroy();
-            # otherwise:
-            Gtk3->main_quit;
-        } );
-    $assistant->signal_connect( cancel  => \&on_assistant_close_cancel );
-    $assistant->signal_connect( close   => \&on_assistant_close_cancel );
-    $assistant->signal_connect( apply   => \&on_assistant_apply );
-    $assistant->signal_connect( prepare => \&on_assistant_prepare );
-
-    $assistant->show_all();
 }
 
 # This library is free software; you can redistribute it and/or
