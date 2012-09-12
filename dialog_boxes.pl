@@ -15,70 +15,66 @@ use constant GTK_RESPONSE_OK => -5;
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
-my $window;
 my ( $entry1, $entry2 );
 
-do_dialog();
-Gtk3->main;
+my $window = Gtk3::Window->new('toplevel');
+$window->set_title('Dialogs');
+$window->signal_connect( destroy => sub { Gtk3->main_quit } );
+$window->set_border_width(8);
 
-sub do_dialog {
-    $window = Gtk3::Window->new('toplevel');
-    $window->set_title('Dialogs');
-    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-    $window->set_border_width(8);
-
-    my $icon = 'gtk-logo-rgb.gif';
-    if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
-        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-        $window->set_icon($transparent);
-    }
-
-    my $frame = Gtk3::Frame->new('Dialogs');
-    $window->add($frame);
-
-    my $vbox = Gtk3::Box->new( 'vertical', 8 );
-    $vbox->set_border_width(8);
-    $frame->add($vbox);
-
-    # Standard message dialog
-    my $hbox = Gtk3::Box->new( 'horizontal', 8 );
-    $vbox->pack_start( $hbox, FALSE, FALSE, 0 );
-    my $button = Gtk3::Button->new_with_mnemonic('_Message Dialog');
-    $button->signal_connect( clicked => \&message_dialog_clicked );
-    $hbox->pack_start( $button,                            FALSE, FALSE, 0 );
-    $vbox->pack_start( Gtk3::Separator->new('horizontal'), FALSE, FALSE, 0 );
-
-    # Interactive dialog
-    $hbox = Gtk3::Box->new( 'horizontal', 8 );
-    $vbox->pack_start( $hbox, FALSE, FALSE, 0 );
-
-    my $vbox2 = Gtk3::Box->new( 'vertical', 0 );
-    $button = Gtk3::Button->new_with_mnemonic('_Interactive Dialog');
-    $button->signal_connect( clicked => \&interactive_dialog_clicked );
-    $hbox->pack_start( $vbox2, FALSE, FALSE, 0 );
-    $vbox2->pack_start( $button, FALSE, FALSE, 0 );
-
-    my $table = Gtk3::Grid->new();
-    $table->set_row_spacing(4);
-    $table->set_column_spacing(4);
-    $hbox->pack_start( $table, FALSE, FALSE, 0 );
-
-    my $label = Gtk3::Label->new_with_mnemonic('_Entry 1');
-    $table->attach( $label, 0, 0, 1, 1 );
-
-    $entry1 = Gtk3::Entry->new();
-    $table->attach( $entry1, 1, 0, 1, 1 );
-    $label->set_mnemonic_widget($entry1);
-
-    $label = Gtk3::Label->new_with_mnemonic('E_ntry 2');
-    $table->attach( $label, 0, 1, 1, 1 );
-
-    $entry2 = Gtk3::Entry->new();
-    $table->attach( $entry2, 1, 1, 1, 1 );
-
-    $window->show_all;
+my $icon = 'gtk-logo-rgb.gif';
+if ( -e $icon ) {
+    my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
+    my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+    $window->set_icon($transparent);
 }
+
+my $frame = Gtk3::Frame->new('Dialogs');
+$window->add($frame);
+
+my $vbox = Gtk3::Box->new( 'vertical', 8 );
+$vbox->set_border_width(8);
+$frame->add($vbox);
+
+# Standard message dialog
+my $hbox = Gtk3::Box->new( 'horizontal', 8 );
+$vbox->pack_start( $hbox, FALSE, FALSE, 0 );
+my $button = Gtk3::Button->new_with_mnemonic('_Message Dialog');
+$button->signal_connect( clicked => \&message_dialog_clicked );
+$hbox->pack_start( $button,                            FALSE, FALSE, 0 );
+$vbox->pack_start( Gtk3::Separator->new('horizontal'), FALSE, FALSE, 0 );
+
+# Interactive dialog
+$hbox = Gtk3::Box->new( 'horizontal', 8 );
+$vbox->pack_start( $hbox, FALSE, FALSE, 0 );
+
+my $vbox2 = Gtk3::Box->new( 'vertical', 0 );
+$button = Gtk3::Button->new_with_mnemonic('_Interactive Dialog');
+$button->signal_connect( clicked => \&interactive_dialog_clicked );
+$hbox->pack_start( $vbox2, FALSE, FALSE, 0 );
+$vbox2->pack_start( $button, FALSE, FALSE, 0 );
+
+my $table = Gtk3::Grid->new();
+$table->set_row_spacing(4);
+$table->set_column_spacing(4);
+$hbox->pack_start( $table, FALSE, FALSE, 0 );
+
+my $label = Gtk3::Label->new_with_mnemonic('_Entry 1');
+$table->attach( $label, 0, 0, 1, 1 );
+
+$entry1 = Gtk3::Entry->new();
+$table->attach( $entry1, 1, 0, 1, 1 );
+$label->set_mnemonic_widget($entry1);
+
+$label = Gtk3::Label->new_with_mnemonic('E_ntry 2');
+$table->attach( $label, 0, 1, 1, 1 );
+
+$entry2 = Gtk3::Entry->new();
+$table->attach( $entry2, 1, 1, 1, 1 );
+
+$window->show_all;
+
+Gtk3->main;
 
 sub message_dialog_clicked {
     state $i = 1;
