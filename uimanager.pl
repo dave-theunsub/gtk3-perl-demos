@@ -27,69 +27,63 @@ use constant SOUND_LOW    => 0;
 use constant SOUND_MEDIUM => 1;
 use constant SOUND_HIGH   => 2;
 
-do_ui_manager();
-Gtk3->main();
+my $window = Gtk3::Window->new('toplevel');
+$window->signal_connect( destroy => sub { Gtk3->main_quit } );
+$window->set_border_width(0);
+$window->set_title('UI Manager');
 
-sub do_ui_manager {
-    my $window = Gtk3::Window->new('toplevel');
-    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-    $window->set_border_width(0);
-    $window->set_title('UI Manager');
-
-    my $icon = 'gtk-logo-rgb.gif';
-    if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
-        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-        $window->set_icon($transparent);
-    }
-
-    my @entries = get_entries();
-    my @toggle  = get_toggle_entries();
-    my @shape   = get_shape_entries();
-    my @color   = get_color_entries();
-    my @vol     = get_volume_entries();
-    my $ui_info = get_ui_info();
-
-    my $actions = Gtk3::ActionGroup->new('Actions');
-    $actions->add_actions( \@entries, undef );
-    $actions->add_toggle_actions( \@toggle, undef );
-    $actions->add_radio_actions( \@color, COLOR_RED,
-        \&activate_radio_action );
-    $actions->add_radio_actions( \@shape, SHAPE_OVAL,
-        \&activate_radio_action );
-    $actions->add_radio_actions( \@vol, SOUND_MEDIUM,
-        \&activate_radio_action );
-
-    my $ui = Gtk3::UIManager->new();
-    $ui->insert_action_group( $actions, 0 );
-    $window->add_accel_group( $ui->get_accel_group );
-    $ui->add_ui_from_string( $ui_info, length($ui_info) );
-
-    my $vbox = Gtk3::Box->new( 'vertical', 0 );
-    $vbox->set_homogeneous(FALSE);
-    $window->add($vbox);
-    $vbox->pack_start( $ui->get_widget('/MenuBar'), FALSE, FALSE, 0 );
-
-    my $label = Gtk3::Label->new("Type\n<alt>\nto start");
-    $label->set_size_request( 200, 200 );
-    $label->set_halign('center');
-    $label->set_valign('center');
-    $vbox->pack_start( $label, TRUE, TRUE, 0 );
-
-    $vbox->pack_start( Gtk3::HSeparator->new(), FALSE, TRUE, 0 );
-
-    my $box2 = Gtk3::Box->new( 'vertical', 10 );
-    $box2->set_homogeneous(FALSE);
-    $vbox->pack_start( $box2, FALSE, TRUE, 0 );
-
-    my $button = Gtk3::Button->new_with_label('close');
-    $button->signal_connect( clicked => sub { $window->destroy } );
-    $vbox->pack_start( $button, FALSE, TRUE, 0 );
-    $button->set_can_default(TRUE);
-    $button->grab_default(TRUE);
-
-    $window->show_all();
+my $icon = 'gtk-logo-rgb.gif';
+if ( -e $icon ) {
+    my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
+    my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+    $window->set_icon($transparent);
 }
+
+my @entries = get_entries();
+my @toggle  = get_toggle_entries();
+my @shape   = get_shape_entries();
+my @color   = get_color_entries();
+my @vol     = get_volume_entries();
+my $ui_info = get_ui_info();
+
+my $actions = Gtk3::ActionGroup->new('Actions');
+$actions->add_actions( \@entries, undef );
+$actions->add_toggle_actions( \@toggle, undef );
+$actions->add_radio_actions( \@color, COLOR_RED,    \&activate_radio_action );
+$actions->add_radio_actions( \@shape, SHAPE_OVAL,   \&activate_radio_action );
+$actions->add_radio_actions( \@vol,   SOUND_MEDIUM, \&activate_radio_action );
+
+my $ui = Gtk3::UIManager->new();
+$ui->insert_action_group( $actions, 0 );
+$window->add_accel_group( $ui->get_accel_group );
+$ui->add_ui_from_string( $ui_info, length($ui_info) );
+
+my $vbox = Gtk3::Box->new( 'vertical', 0 );
+$vbox->set_homogeneous(FALSE);
+$window->add($vbox);
+$vbox->pack_start( $ui->get_widget('/MenuBar'), FALSE, FALSE, 0 );
+
+my $label = Gtk3::Label->new("Type\n<alt>\nto start");
+$label->set_size_request( 200, 200 );
+$label->set_halign('center');
+$label->set_valign('center');
+$vbox->pack_start( $label, TRUE, TRUE, 0 );
+
+$vbox->pack_start( Gtk3::HSeparator->new(), FALSE, TRUE, 0 );
+
+my $box2 = Gtk3::Box->new( 'vertical', 10 );
+$box2->set_homogeneous(FALSE);
+$vbox->pack_start( $box2, FALSE, TRUE, 0 );
+
+my $button = Gtk3::Button->new_with_label('close');
+$button->signal_connect( clicked => sub { $window->destroy } );
+$vbox->pack_start( $button, FALSE, TRUE, 0 );
+$button->set_can_default(TRUE);
+$button->grab_default(TRUE);
+
+$window->show_all();
+
+Gtk3->main();
 
 sub activate_action {
     my $action = shift;
