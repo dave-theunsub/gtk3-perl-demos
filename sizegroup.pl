@@ -22,73 +22,68 @@ use warnings;
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
-my $table;
+my @color_options = ( 'Red',    'Green',  'Blue' );
+my @dash_options  = ( 'Solid',  'Dashed', 'Dotted' );
+my @end_options   = ( 'Square', 'Round',  'Arrow' );
 
-do_sizegroup();
-Gtk3->main();
+my $window = Gtk3::Dialog->new('');
+$window->add_button( 'gtk-close' => 0 );
+$window->set_title('Size Group');
+$window->signal_connect( response => sub { $window->destroy; 1 } );
+$window->signal_connect( destroy => sub { Gtk3->main_quit } );
 
-sub do_sizegroup {
-    my @color_options = ( 'Red',    'Green',  'Blue' );
-    my @dash_options  = ( 'Solid',  'Dashed', 'Dotted' );
-    my @end_options   = ( 'Square', 'Round',  'Arrow' );
-
-    my $window = Gtk3::Dialog->new('');
-    $window->add_button( 'gtk-close' => 0 );
-    $window->set_title('Size Group');
-    $window->signal_connect( response => sub { $window->destroy; 1 } );
-    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-
-    my $icon = 'gtk-logo-rgb.gif';
-    if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
-        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-        $window->set_icon($transparent);
-    }
-
-    my $vbox = Gtk3::Box->new( 'vertical', 5 );
-    $window->get_content_area()->add($vbox);
-    $vbox->set_border_width(5);
-    $vbox->set_homogeneous(FALSE);
-
-    my $size_group = Gtk3::SizeGroup->new('horizontal');
-
-    my $frame = Gtk3::Frame->new('Color Options');
-    $vbox->pack_start( $frame, TRUE, TRUE, 0 );
-
-    my $table = Gtk3::Grid->new;
-    $table->set_border_width(5);
-    $table->set_row_spacing(5);
-    $table->set_column_spacing(10);
-    $frame->add($table);
-
-    add_row( $table, 0, $size_group, '_Foreground', @color_options );
-    add_row( $table, 1, $size_group, '_Background', @color_options );
-
-    # Add another frame holding line style options
-    my $l_frame = Gtk3::Frame->new('Line Options');
-    $vbox->pack_start( $l_frame, FALSE, FALSE, 0 );
-
-    my $l_table = Gtk3::Grid->new;
-    $l_table->set_border_width(5);
-    $l_table->set_row_spacing(5);
-    $l_table->set_column_spacing(10);
-    $l_frame->add($l_table);
-
-    add_row( $l_table, 0, $size_group, '_Dashing',    @dash_options );
-    add_row( $l_table, 1, $size_group, '_Background', @end_options );
-
-    # Add a CheckButton to turn grouping on and off
-    my $cb = Gtk3::CheckButton->new_with_mnemonic('_Enable grouping');
-    $vbox->pack_start( $cb, FALSE, FALSE, 0 );
-
-    $cb->set_active(TRUE);
-    $cb->signal_connect(
-        toggled => \&toggle_grouping,
-        $size_group
-        );
-
-    $window->show_all();
+my $icon = 'gtk-logo-rgb.gif';
+if ( -e $icon ) {
+    my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
+    my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+    $window->set_icon($transparent);
 }
+
+my $vbox = Gtk3::Box->new( 'vertical', 5 );
+$window->get_content_area()->add($vbox);
+$vbox->set_border_width(5);
+$vbox->set_homogeneous(FALSE);
+
+my $size_group = Gtk3::SizeGroup->new('horizontal');
+
+my $frame = Gtk3::Frame->new('Color Options');
+$vbox->pack_start( $frame, TRUE, TRUE, 0 );
+
+my $table = Gtk3::Grid->new;
+$table->set_border_width(5);
+$table->set_row_spacing(5);
+$table->set_column_spacing(10);
+$frame->add($table);
+
+add_row( $table, 0, $size_group, '_Foreground', @color_options );
+add_row( $table, 1, $size_group, '_Background', @color_options );
+
+# Add another frame holding line style options
+my $l_frame = Gtk3::Frame->new('Line Options');
+$vbox->pack_start( $l_frame, FALSE, FALSE, 0 );
+
+my $l_table = Gtk3::Grid->new;
+$l_table->set_border_width(5);
+$l_table->set_row_spacing(5);
+$l_table->set_column_spacing(10);
+$l_frame->add($l_table);
+
+add_row( $l_table, 0, $size_group, '_Dashing',    @dash_options );
+add_row( $l_table, 1, $size_group, '_Background', @end_options );
+
+# Add a CheckButton to turn grouping on and off
+my $cb = Gtk3::CheckButton->new_with_mnemonic('_Enable grouping');
+$vbox->pack_start( $cb, FALSE, FALSE, 0 );
+
+$cb->set_active(TRUE);
+$cb->signal_connect(
+    toggled => \&toggle_grouping,
+    $size_group
+    );
+
+$window->show_all();
+
+Gtk3->main();
 
 sub add_row {
     my ( $table, $row, $size_group, $text, @options ) = @_;
