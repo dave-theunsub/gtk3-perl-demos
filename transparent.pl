@@ -18,7 +18,44 @@ use constant SHADOW_OFFSET_X => 7;
 use constant SHADOW_OFFSET_Y => 7;
 use constant SHADOW_RADIUS   => 5;
 
-do_transparent();
+my $window = Gtk3::Window->new('toplevel');
+$window->set_title('Transparency demo');
+$window->signal_connect( destroy => sub { Gtk3->main_quit } );
+$window->set_default_size( 450, 450 );
+$window->set_border_width(0);
+
+my $icon = 'gtk-logo-rgb.gif';
+if ( -e $icon ) {
+    my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
+    my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
+    $window->set_icon($transparent);
+}
+
+my $view = Gtk3::TextView->new();
+my $sw = Gtk3::ScrolledWindow->new( undef, undef );
+$sw->set_policy( 'automatic', 'automatic' );
+$sw->add($view);
+
+my $overlay = Gtk3::Overlay->new();
+$overlay->add($sw);
+$window->add($overlay);
+$overlay->override_background_color('normal');
+
+my $align = Gtk3::Alignment->new( 0.0, 0.0, 0.0, 0.0 );
+$align->set_padding( 0, SHADOW_OFFSET_Y, 0, SHADOW_OFFSET_X, );
+#$align->signal_connect( draw => \&draw_callback );
+
+my $entry = Gtk3::Entry->new();
+$align->add($entry);
+
+$overlay->add_overlay($align);
+$align->set_halign('center');
+$align->set_valign('start');
+
+$overlay->show_all();
+
+$window->show_all;
+
 Gtk3->main();
 
 sub draw_shadow_box {
@@ -140,46 +177,6 @@ sub draw_callback {
     draw_shadow_box( $cr, $rect, SHADOW_RADIUS, 0.4 );
 
     return FALSE;
-}
-
-sub do_transparent {
-    my $window = Gtk3::Window->new('toplevel');
-    $window->set_title('Transparency demo');
-    $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-    $window->set_default_size( 450, 450 );
-    $window->set_border_width(0);
-
-    my $icon = 'gtk-logo-rgb.gif';
-    if ( -e $icon ) {
-        my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($icon);
-        my $transparent = $pixbuf->add_alpha( TRUE, 0xff, 0xff, 0xff );
-        $window->set_icon($transparent);
-    }
-
-    my $view = Gtk3::TextView->new();
-    my $sw = Gtk3::ScrolledWindow->new( undef, undef );
-    $sw->set_policy( 'automatic', 'automatic' );
-    $sw->add($view);
-
-    my $overlay = Gtk3::Overlay->new();
-    $overlay->add($sw);
-    $window->add($overlay);
-    $overlay->override_background_color('normal');
-
-    my $align = Gtk3::Alignment->new( 0.0, 0.0, 0.0, 0.0 );
-    $align->set_padding( 0, SHADOW_OFFSET_Y, 0, SHADOW_OFFSET_X, );
-    #$align->signal_connect( draw => \&draw_callback );
-
-    my $entry = Gtk3::Entry->new();
-    $align->add($entry);
-
-    $overlay->add_overlay($align);
-    $align->set_halign('center');
-    $align->set_valign('start');
-
-    $overlay->show_all();
-
-    $window->show_all;
 }
 
 # This library is free software; you can redistribute it and/or
