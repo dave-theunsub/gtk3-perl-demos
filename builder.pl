@@ -12,10 +12,27 @@ use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 use File::Basename 'dirname';
 
-my $builder;
+my $builder  = Gtk3::Builder->new();
+my $filename = demo_find_file('demo.ui');
+$builder->add_from_file($filename);
 
-do_builder();
+my $window = $builder->get_object('window1');
+$builder->connect_signals(undef);
+
+$window->set_screen( $window->get_screen() );
+$window->signal_connect( destroy => sub { Gtk3->main_quit } );
+
+$window->show_all();
+
 Gtk3->main();
+
+sub demo_find_file {
+    my $base = shift;
+    return $base if ( -e $base );
+
+    my $dir = dirname($base);
+    return $dir . $base;
+}
 
 sub about_activate {
     my $about_dialog = $builder->get_object('aboutdialog1');
@@ -27,28 +44,6 @@ sub quit_activate {
     my $action = shift;
     my $window = $builder->get_object('window1');
     $window->destroy;
-}
-
-sub do_builder {
-        $builder = Gtk3::Builder->new();
-        my $filename = demo_find_file('demo.ui');
-        $builder->add_from_file($filename);
-
-        my $window = $builder->get_object('window1');
-        $builder->connect_signals(undef);
-
-        $window->set_screen( $window->get_screen() );
-        $window->signal_connect( destroy => sub { Gtk3->main_quit } );
-
-        $window->show_all();
-}
-
-sub demo_find_file {
-    my $base = shift;
-    return $base if ( -e $base );
-
-    my $dir = dirname($base);
-    return $dir . $base;
 }
 
 # This library is free software; you can redistribute it and/or
