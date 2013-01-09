@@ -38,6 +38,7 @@ my @_GTK_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
   Gtk3::ActionGroup::list_actions
   Gtk3::Builder::get_objects
   Gtk3::CellLayout::get_cells
+  Gtk3::Container::get_children
   Gtk3::Stock::list_ids
   Gtk3::TreePath::get_indices
   Gtk3::UIManager::get_action_groups
@@ -56,6 +57,44 @@ my @_GTK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
   Gtk3::TreeModelSort::convert_child_iter_to_iter
   Gtk3::TreeSelection::get_selected
 /;
+my @_GTK_USE_GENERIC_SIGNAL_MARSHALLER_FOR = (
+  ['Gtk3::Editable', 'insert-text'],
+  ['Gtk3::Dialog',   'response',    \&Gtk3::Dialog::_gtk3_perl_response_converter],
+);
+
+# FIXME: G:O:I should provide some general mechanism wrapping
+# looks_like_number, gperl_try_convert_enum and
+# gperl_convert_back_enum_pass_unknown.  Then this would not be needed.
+my %_GTK_RESPONSE_ID_TO_NICK = (
+   -1 => 'none',
+   -2 => 'reject',
+   -3 => 'accept',
+   -4 => 'delete-event',
+   -5 => 'ok',
+   -6 => 'cancel',
+   -7 => 'close',
+   -8 => 'yes',
+   -9 => 'no',
+  -10 => 'apply',
+  -11 => 'help',
+);
+my %_GTK_RESPONSE_NICK_TO_ID = reverse %_GTK_RESPONSE_ID_TO_NICK;
+my $_GTK_RESPONSE_ID_TO_NICK = sub {
+  exists $_GTK_RESPONSE_ID_TO_NICK{$_[0]}
+    ? $_GTK_RESPONSE_ID_TO_NICK{$_[0]}
+    : $_[0]
+};
+my $_GTK_RESPONSE_NICK_TO_ID = sub {
+  exists $_GTK_RESPONSE_NICK_TO_ID{$_[0]}
+    ? $_GTK_RESPONSE_NICK_TO_ID{$_[0]}
+    : $_[0]
+};
+
+# Converter for the "response" signal.
+sub Gtk3::Dialog::_gtk3_perl_response_converter {
+  my ($dialog, $id) = @_;
+  return ($dialog, $_GTK_RESPONSE_ID_TO_NICK->($id));
+}
 
 # - gdk customization ------------------------------------------------------- #
 
@@ -75,7 +114,7 @@ my %_GDK_REBLESSERS = (
   'Gtk3::Gdk::Event' => \&Gtk3::Gdk::Event::_rebless,
 );
 
-my %_GDK_TYPE_TO_PACKAGE = (
+my %_GDK_EVENT_TYPE_TO_PACKAGE = (
   'expose' => 'Expose',
   'motion-notify' => 'Motion',
   'button-press' => 'Button',
@@ -120,7 +159,7 @@ my %_GDK_TYPE_TO_PACKAGE = (
 {
   no strict qw(refs);
   my %seen;
-  foreach (grep { !$seen{$_}++ } values %_GDK_TYPE_TO_PACKAGE) {
+  foreach (grep { !$seen{$_}++ } values %_GDK_EVENT_TYPE_TO_PACKAGE) {
     push @{'Gtk3::Gdk::Event' . $_ . '::ISA'}, 'Gtk3::Gdk::Event';
   }
 }
@@ -128,8 +167,8 @@ my %_GDK_TYPE_TO_PACKAGE = (
 sub Gtk3::Gdk::Event::_rebless {
   my ($event) = @_;
   my $package = 'Gtk3::Gdk::Event';
-  if (exists $_GDK_TYPE_TO_PACKAGE{$event->type}) {
-    $package .= $_GDK_TYPE_TO_PACKAGE{$event->type};
+  if (exists $_GDK_EVENT_TYPE_TO_PACKAGE{$event->type}) {
+    $package .= $_GDK_EVENT_TYPE_TO_PACKAGE{$event->type};
   }
   return bless $event, $package;
 }
@@ -151,7 +190,8 @@ sub import {
     package => $_GTK_PACKAGE,
     name_corrections => \%_GTK_NAME_CORRECTIONS,
     flatten_array_ref_return_for => \@_GTK_FLATTEN_ARRAY_REF_RETURN_FOR,
-    handle_sentinel_boolean_for => \@_GTK_HANDLE_SENTINEL_BOOLEAN_FOR);
+    handle_sentinel_boolean_for => \@_GTK_HANDLE_SENTINEL_BOOLEAN_FOR,
+    use_generic_signal_marshaller_for => \@_GTK_USE_GENERIC_SIGNAL_MARSHALLER_FOR);
 
   Glib::Object::Introspection->setup (
     basename => $_GDK_BASENAME,
@@ -203,6 +243,19 @@ sub Gtk3::check_version {
   Glib::Object::Introspection->invoke ($_GTK_BASENAME, undef, 'check_version',
                                        @_ == 4 ? @_[1..3] : @_);
 }
+
+# Names "STOP" and "PROPAGATE" here are per the GtkWidget event signal
+# descriptions.  In some other flavours of signals the jargon is "handled"
+# instead of "stop".  "Handled" matches g_signal_accumulator_true_handled(),
+# though that function doesn't rate a mention in the Gtk docs.  There's
+# nothing fixed in the idea of "true means cease emission" (whether it's
+# called "stop" or "handled").  You can just as easily have false for cease
+# (the way the underlying GSignalAccumulator func in fact operates).  The
+# upshot being don't want to attempt to be too universal with the names
+# here; "EVENT" is meant to hint at the context or signal flavour they're
+# for use with.
+sub Gtk3::EVENT_PROPAGATE() { !1 };
+sub Gtk3::EVENT_STOP() { 1 };
 
 sub Gtk3::init {
   my $rest = Glib::Object::Introspection->invoke (
@@ -556,11 +609,146 @@ sub Gtk3::CheckMenuItem::new {
     $_GTK_BASENAME, 'CheckMenuItem', 'new', @_);
 }
 
+sub Gtk3::Container::get_focus_chain {
+  my ($container) = @_;
+  my ($is_set, $widgets) = Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Container', 'get_focus_chain',
+    $container);
+  return () unless $is_set;
+  return @$widgets;
+}
+
+sub Gtk3::Container::set_focus_chain {
+  my ($container, @rest) = @_;
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Container', 'set_focus_chain',
+    $container, _rest_to_ref (\@rest));
+}
+
 sub Gtk3::CssProvider::load_from_data {
   my ($self, $data) = @_;
   return Glib::Object::Introspection->invoke (
     $_GTK_BASENAME, 'CssProvider', 'load_from_data',
     $self, _unpack_unless_array_ref ($data));
+}
+
+sub Gtk3::Dialog::add_action_widget {
+  Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'add_action_widget',
+    $_[0], $_[1], $_GTK_RESPONSE_NICK_TO_ID->($_[2]));
+}
+
+sub Gtk3::Dialog::add_button {
+  Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'add_button',
+    $_[0], $_[1], $_GTK_RESPONSE_NICK_TO_ID->($_[2]));
+}
+
+sub Gtk3::Dialog::add_buttons {
+  my ($dialog, @rest) = @_;
+  for (my $i = 0; $i < @rest; $i += 2) {
+    $dialog->add_button ($rest[$i], $rest[$i+1]);
+  }
+}
+
+sub Gtk3::Dialog::get_response_for_widget {
+  my $id = Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'get_response_for_widget', @_);
+  return $_GTK_RESPONSE_ID_TO_NICK->($id);
+}
+
+sub Gtk3::Dialog::get_widget_for_response {
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'get_widget_for_response',
+    $_[0], $_GTK_RESPONSE_NICK_TO_ID->($_[1]));
+}
+
+sub Gtk3::Dialog::new {
+  my ($class, $title, $parent, $flags, @rest) = @_;
+  if (@_ == 1) {
+    return Glib::Object::Introspection->invoke (
+      $_GTK_BASENAME, 'Dialog', 'new', @_);
+  } elsif ((@_ < 4) || (@rest % 2)){
+    croak ("Usage: Gtk3::Dialog->new ()\n" .
+           "  or Gtk3::Dialog->new (TITLE, PARENT, FLAGS, ...)\n" .
+           "  where ... is a series of button text and response id pairs");
+  } else {
+    my $dialog = Gtk3::Dialog->new;
+    defined $title and $dialog->set_title ($title);
+    defined $parent and $dialog->set_transient_for ($parent);
+    $flags & 'modal' and $dialog->set_modal (Glib::TRUE);
+    $flags & 'destroy-with-parent' and $dialog->set_destroy_with_parent (Glib::TRUE);
+    $dialog->add_buttons (@rest);
+    return $dialog;
+  }
+}
+
+sub Gtk3::Dialog::new_with_buttons {
+  &Gtk3::Dialog::new;
+}
+
+sub Gtk3::Dialog::response {
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'response',
+    $_[0], $_GTK_RESPONSE_NICK_TO_ID->($_[1]));
+}
+
+sub Gtk3::Dialog::run {
+  my $id = Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'run', @_);
+  return $_GTK_RESPONSE_ID_TO_NICK->($id);
+}
+
+sub Gtk3::Dialog::set_alternative_button_order {
+  my ($dialog, @rest) = @_;
+  return unless @rest;
+  Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'set_alternative_button_order_from_array',
+    $dialog, [map { $_GTK_RESPONSE_NICK_TO_ID->($_) } @rest]);
+}
+
+sub Gtk3::Dialog::set_default_response {
+  Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'set_default_response',
+    $_[0], $_GTK_RESPONSE_NICK_TO_ID->($_[1]));
+}
+
+sub Gtk3::Dialog::set_response_sensitive {
+  Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Dialog', 'set_response_sensitive',
+    $_[0], $_GTK_RESPONSE_NICK_TO_ID->($_[1]), $_[2]);
+}
+
+sub Gtk3::Editable::insert_text {
+  return Glib::Object::Introspection->invoke (
+    $_GTK_BASENAME, 'Editable', 'insert_text',
+    @_ == 4 ? @_ : (@_[0,1], length $_[1], $_[2]));
+}
+
+sub Gtk3::FileChooserDialog::new {
+  my ($class, $title, $parent, $action, @varargs) = @_;
+
+  if (@varargs % 2) {
+    croak 'Usage: Gtk2::FileChooserDialog->new' .
+          ' (title, parent, action, backend, button-text =>' .
+          " response-id, ...)\n";
+  }
+
+  my $result = Glib::Object::new (
+    $class,
+    title => $title,
+    action => $action,
+  );
+
+  if ($parent) {
+    $result->set_transient_for ($parent);
+  }
+
+  for (my $i = 0; $i < @varargs; $i += 2) {
+    $result->add_button ($varargs[$i], $_GTK_RESPONSE_NICK_TO_ID->($varargs[$i+1]));
+  }
+
+  return $result;
 }
 
 sub Gtk3::HBox::new {
@@ -1016,6 +1204,11 @@ keys 'width', 'height', 'x' and 'y'.
 
 =item * The Gtk3::Menu menu position callback passed to popup() does not
 receive x and y parameters anymore.
+
+=item * Callbacks connected to Gtk3::Editable's "insert-text" signal do not
+have as many options anymore as they had in Gtk2.  Changes to arguments will
+not be propagated to the next signal handler, and only the updated position can
+and must be returned.
 
 =back
 
