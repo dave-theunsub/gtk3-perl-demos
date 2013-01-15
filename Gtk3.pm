@@ -47,7 +47,6 @@ my @_GTK_FLATTEN_ARRAY_REF_RETURN_FOR = qw/
 /;
 my @_GTK_HANDLE_SENTINEL_BOOLEAN_FOR = qw/
   Gtk3::Stock::lookup
-  Gtk3::TextBuffer::get_selection_bounds
   Gtk3::TreeModel::get_iter
   Gtk3::TreeModel::get_iter_first
   Gtk3::TreeModel::get_iter_from_string
@@ -277,11 +276,6 @@ sub Gtk3::init_check {
 sub Gtk3::main {
   # Ignore any arguments passed in.
   Glib::Object::Introspection->invoke ($_GTK_BASENAME, undef, 'main');
-}
-
-sub Gtk3::main_level {
-  # Ignore any arguments passed in.
-  return Glib::Object::Introspection->invoke ($_GTK_BASENAME, undef, 'main_level');
 }
 
 sub Gtk3::main_quit {
@@ -864,76 +858,6 @@ sub Gtk3::MessageDialog::new {
   }
 }
 
-sub Gtk3::TextBuffer::create_tag {
-  my ($buffer, $tag_name, @rest) = @_;
-  if (@rest % 2) {
-    croak ('Usage: $buffer->create_tag ($tag_name, $property1 => $value1, ...');
-  }
-  my $tag = Gtk3::TextTag->new ($tag_name);
-  my $tag_table = $buffer->get_tag_table;
-  $tag_table->add ($tag);
-  for (my $i = 2 ; $i < @rest ; $i += 2) {
-    $tag->set_property ($rest[$i], $rest[$i+1]);
-  }
-  return $tag;
-}
-
-sub Gtk3::TextBuffer::insert {
-  return Glib::Object::Introspection->invoke (
-    $_GTK_BASENAME, 'TextBuffer', 'insert',
-    @_ == 4 ? @_ : (@_[0,1,2], length $_[2]));
-}
-
-sub Gtk3::TextBuffer::insert_at_cursor {
-  return Glib::Object::Introspection->invoke (
-    $_GTK_BASENAME, 'TextBuffer', 'insert_at_cursor',
-    @_ == 3 ? @_ : (@_[0,1], length $_[1]));
-}
-
-sub Gtk3::TextBuffer::insert_interactive {
-  return Glib::Object::Introspection->invoke (
-    $_GTK_BASENAME, 'TextBuffer', 'insert_interactive',
-    @_ == 5 ? @_ : (@_[0,1,2], length $_[2], $_[3]));
-}
-
-sub Gtk3::TextBuffer::insert_interactive_at_cursor {
-  return Glib::Object::Introspection->invoke (
-    $_GTK_BASENAME, 'TextBuffer', 'insert_interactive_at_cursor',
-    @_ == 4 ? @_ : (@_[0,1], length $_[1], $_[2]));
-}
-
-sub Gtk3::TextBuffer::insert_with_tags {
-  my ($buffer, $iter, $text, @tags) = @_;
-  my $start_offset = $iter->get_offset;
-  $buffer->insert ($iter, $text);
-  my $start = $buffer->get_iter_at_offset ($start_offset);
-  foreach my $tag (@tags) {
-    $buffer->apply_tag ($tag, $start, $iter);
-  }
-}
-
-sub Gtk3::TextBuffer::insert_with_tags_by_name {
-  my ($buffer, $iter, $text, @tag_names) = @_;
-  my $start_offset = $iter->get_offset;
-  $buffer->insert ($iter, $text);
-  my $tag_table = $buffer->get_tag_table;
-  my $start = $buffer->get_iter_at_offset ($start_offset);
-  foreach my $tag_name (@tag_names) {
-    my $tag = $tag_table->lookup ($tag_name);
-    if (!$tag) {
-      warn "no tag with name $tag_name";
-    } else {
-      $buffer->apply_tag ($tag, $start, $iter);
-    }
-  }
-}
-
-sub Gtk3::TextBuffer::set_text {
-  return Glib::Object::Introspection->invoke (
-    $_GTK_BASENAME, 'TextBuffer', 'set_text',
-    @_ == 3 ? @_ : (@_[0,1], length $_[1]));
-}
-
 sub Gtk3::TreeModel::get {
   my ($model, $iter, @columns) = @_;
   my @values = map { $model->get_value ($iter, $_) } @columns;
@@ -1049,11 +973,6 @@ sub Gtk3::Gdk::Window::new {
     if (exists $attr->{wmclass_name} && exists $attr->{wmclass_class}) { $attr_mask |= 'GDK_WA_WMCLASS' };
     if (exists $attr->{override_redirect}) { $attr_mask |= 'GDK_WA_NOREDIR' };
     if (exists $attr->{type_hint}) { $attr_mask |= 'GDK_WA_TYPE_HINT' };
-    if (!Gtk3::CHECK_VERSION (3, 6, 0)) {
-      # Before 3.6, the attribute mask parameter lacked proper annotations, hence
-      # we numerify it here.  FIXME: This breaks encapsulation.
-      $attr_mask = $$attr_mask;
-    }
   }
   return Glib::Object::Introspection->invoke (
     $_GDK_BASENAME, 'Window', 'new',
