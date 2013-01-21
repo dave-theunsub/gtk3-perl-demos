@@ -12,10 +12,10 @@ examples to work from, but also to help ensure the main Gtk3.pm module works as 
 
 Installing gtk3-perl
 ====================
-   perl Makefile.PL  
-   make  
-   make test  
-   make install
+    perl Makefile.PL  
+    make  
+    make test  
+    make install
 
 Important links
 ===============
