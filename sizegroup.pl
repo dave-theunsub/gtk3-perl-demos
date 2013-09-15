@@ -15,6 +15,7 @@
 # you would not include the GTK_FILL flag.
 #
 # Perl version by Dave M <dave.nerd@gmail.com>
+# with a patch from Thierry Vignaud <thierry.vignaud@gmail.com>
 
 use strict;
 use warnings;
@@ -26,7 +27,7 @@ my @color_options = ( 'Red',    'Green',  'Blue' );
 my @dash_options  = ( 'Solid',  'Dashed', 'Dotted' );
 my @end_options   = ( 'Square', 'Round',  'Arrow' );
 
-my $window = Gtk3::Dialog->new('');
+my $window = Gtk3::Dialog->new();
 $window->add_button( 'gtk-close' => 0 );
 $window->set_title('Size Group');
 $window->signal_connect( response => sub { $window->destroy; 1 } );
