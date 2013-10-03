@@ -66,8 +66,7 @@ sub click {
 
     my $iter  = $model->get_iter( $path );
     my $value = $model->get_value( $iter, 1 );
-    my $image = $model->get_value( $iter, 0 );
-    warn "received $value\n";
+    warn "clicked $value\n";
 
     my $dialog = Gtk3::MessageDialog->new(
         $window,                                # parent
