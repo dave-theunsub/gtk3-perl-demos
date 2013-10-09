@@ -4,17 +4,16 @@
 # Demonstrates an interface loaded from a XML description.
 #
 # Perl version by Dave M <dave.nerd@gmail.com>
+# with patches from Thierry Vignaud <thierry.vignaud@gmail.com>
 
 use strict;
 use warnings;
 
 use Gtk3 '-init';
-use Glib 'TRUE', 'FALSE';
 use File::Basename 'dirname';
 
 my $builder  = Gtk3::Builder->new();
-my $filename = demo_find_file('demo.ui');
-$builder->add_from_file($filename);
+$builder->add_from_file(dirname($0) . '/demo.ui');
 
 my $window = $builder->get_object('window1');
 $builder->connect_signals(undef);
@@ -25,14 +24,6 @@ $window->signal_connect( destroy => sub { Gtk3->main_quit } );
 $window->show_all();
 
 Gtk3->main();
-
-sub demo_find_file {
-    my $base = shift;
-    return $base if ( -e $base );
-
-    my $dir = dirname($base);
-    return $dir . $base;
-}
 
 sub about_activate {
     my $about_dialog = $builder->get_object('aboutdialog1');
