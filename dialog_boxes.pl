@@ -10,8 +10,6 @@ use strict;
 use warnings;
 use feature 'state';
 
-use constant GTK_RESPONSE_OK => -5;
-
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
 
@@ -99,7 +97,7 @@ sub interactive_dialog_clicked {
     $dialog->set_title('Interactive Dialog');
     $dialog->set_modal(TRUE);
     $dialog->set_destroy_with_parent(TRUE);
-    $dialog->add_button( 'gtk-ok', GTK_RESPONSE_OK );
+    $dialog->add_button( 'gtk-ok', 'ok' );
 
     my $hbox = Gtk3::Box->new( 'horizontal', 8 );
     $hbox->set_border_width(8);
