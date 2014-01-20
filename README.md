@@ -6,7 +6,7 @@ These modules make it easy to write Gtk3 applications using a natural, Perlish s
 
 The files in this package are demos made mostly from re-writing the demos from the gtk2-perl package,
 as well as some from other sources.  These files serve to not only give other gtk3-perl writers some
-examples to work from, but also to help ensure the main Gtk3.pm module works as intended.  
+examples from which to work, but also to help ensure the main Gtk3.pm module works as intended.  
 
 ![Hello World](https://github.com/dave-theunsub/gtk3-perl-demos/blob/master/hello_world.png?raw=true "Hello World")
 
