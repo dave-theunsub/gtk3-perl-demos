@@ -5,7 +5,6 @@
 
 use strict;
 use warnings;
-use feature 'state';
 
 use Gtk3 '-init';
 use Glib 'TRUE', 'FALSE';
@@ -56,6 +55,7 @@ $window->show_all;
 Gtk3->main;
 
 sub handler {
+    # Unnecessary; just here for documentation purposes
     my ( $position, $char, $num_of_chars ) = @_;
 
     my ( $upper, $lower, $digits, $special ) = ( 0 ) x 4;
