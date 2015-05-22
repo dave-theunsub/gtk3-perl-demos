@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # GtkStatusbar — Report messages of minor importance to the user
-# Perl version by Dave M <dave.nerd@gmail.com>
+# Perl version by Dave M <dave.nerd@gmail.com>, 2015
 # Example based on
 # https://developer.gnome.org/gnome-devel-demos/stable/statusbar.py.html.en
 
@@ -60,3 +60,8 @@ sub handler {
     # Stop the signal emission
     return TRUE;
 }
+
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
