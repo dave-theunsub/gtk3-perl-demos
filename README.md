@@ -12,6 +12,8 @@ examples from which to work, but also to help ensure the main Gtk3.pm module wor
 
 Installing gtk3-perl
 ====================
+Recommend using pre-packaged versions first.  If not, there's the tried and true (but more difficult):
+
     perl Makefile.PL  
     make  
     make test  
@@ -24,7 +26,7 @@ Questions, comments, suggestions, bug fixes for gtk3-perl
 [gtk3-perl mailing list](https://mail.gnome.org/archives/gtk-perl-list/)
 
 Questions, comments, suggestions, bug fixes for the demos here  
-Email me
+https://github.com/dave-theunsub/gtk3-perl-demos/issues
 
 gtk3-perl git source  
 [gtk3-perl source](http://git.gnome.org/browse/perl-Gtk3/)
